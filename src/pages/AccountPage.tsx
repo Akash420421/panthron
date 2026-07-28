@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export const AccountPage: React.FC = () => {
-  const { user, updateUserProfile, toggleUserRole, orders, wishlist, navigateTo, companySettings } = useShop();
+  const { user, updateUserProfile, orders, wishlist, navigateTo, companySettings } = useShop();
 
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'addresses'>('profile');
 
@@ -67,14 +67,6 @@ export const AccountPage: React.FC = () => {
             <p className="text-xs text-zinc-400 mt-0.5">{user.email} · Customer since {user.createdAt}</p>
           </div>
         </div>
-
-        <button
-          onClick={toggleUserRole}
-          className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2"
-        >
-          <ShieldCheck className="w-4 h-4 text-amber-400" />
-          <span>Switch to {user.role === 'customer' ? 'ADMIN' : 'CUSTOMER'} View</span>
-        </button>
       </div>
 
       <div className="flex border-b border-zinc-800 text-xs font-bold">

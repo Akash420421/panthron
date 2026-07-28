@@ -154,6 +154,8 @@ export function mapOrderToRow(o: Omit<Order, 'id'> & { id?: string }): any {
   return row;
 }
 
+import type { HeroSlide } from '../types';
+
 export interface CompanySettings {
   settingId: string;
   companyName: string;
@@ -162,9 +164,47 @@ export interface CompanySettings {
   whatsapp: string;
   email: string;
   address: string;
+  heroSlides: HeroSlide[];
 }
 
 export function mapRowToSettings(row: any): CompanySettings {
+  const defaultSlides: HeroSlide[] = [
+    {
+      id: 'slide-slp',
+      image: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=1400&q=80',
+      productId: 'prod-slp-4',
+      alt: 'Panthron AirCushion Sleeper'
+    },
+    {
+      id: 'slide-1',
+      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1400&q=80',
+      productId: 'prod-1',
+      alt: 'AuraSound Pro Headphones'
+    },
+    {
+      id: 'slide-2',
+      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1400&q=80',
+      productId: 'prod-2',
+      alt: 'Horizon Smartwatch'
+    },
+    {
+      id: 'slide-3',
+      image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=1400&q=80',
+      productId: 'prod-3',
+      alt: 'Urban Leather Backpack'
+    }
+  ];
+  let heroSlides: HeroSlide[] = defaultSlides;
+  try {
+    if (Array.isArray(row.hero_slides) && row.hero_slides.length > 0) {
+      heroSlides = row.hero_slides.map((s: any) => ({
+        id: s.id || ('slide-' + Math.random().toString(36).slice(2, 8)),
+        image: s.image || '',
+        productId: s.productId || s.product_id || '',
+        alt: s.alt || ''
+      }));
+    }
+  } catch (_) { /* ignore corrupt data */ }
   return {
     settingId: row.setting_id,
     companyName: row.company_name || 'PANTHRON',
@@ -173,6 +213,7 @@ export function mapRowToSettings(row: any): CompanySettings {
     whatsapp: row.whatsapp || '',
     email: row.email || '',
     address: row.address || '',
+    heroSlides,
   };
 }
 
@@ -184,6 +225,7 @@ export function mapSettingsToRow(s: Partial<CompanySettings> & { settingId?: str
     whatsapp: s.whatsapp ?? null,
     email: s.email ?? null,
     address: s.address ?? null,
+    hero_slides: s.heroSlides ?? null,
   };
   if (s.settingId) row.setting_id = s.settingId;
   return row;

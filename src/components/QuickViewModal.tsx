@@ -128,7 +128,7 @@ export const QuickViewModal: React.FC = () => {
                   className="flex-1 bg-[#003882] hover:bg-[#002866] text-white font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-colors shadow-md"
                 >
                   <ShoppingCart className="w-4 h-4" />
-                  <span>Add to Cart (${(quickViewProduct.price * quantity).toFixed(2)})</span>
+                  <span>Add to Cart (₹{((quickViewProduct.price * quantity)).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })})</span>
                 </button>
 
                 <button

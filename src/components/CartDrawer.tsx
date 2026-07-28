@@ -50,7 +50,7 @@ export const CartDrawer: React.FC = () => {
     }
   };
 
-  const freeShippingThreshold = 75;
+  const freeShippingThreshold = 5000;
   const progressToFreeShipping = Math.min(100, (cartSubtotal / freeShippingThreshold) * 100);
   const amountNeededForFreeShipping = Math.max(0, freeShippingThreshold - cartSubtotal);
 
@@ -102,7 +102,7 @@ export const CartDrawer: React.FC = () => {
                   {amountNeededForFreeShipping === 0 ? (
                     <span className="text-emerald-700 font-extrabold">You unlocked FREE Shipping!</span>
                   ) : (
-                    <span>Add <strong className="text-[#003882]">${amountNeededForFreeShipping.toFixed(2)}</strong> for Free Shipping</span>
+                    <span>Add <strong className="text-[#003882]">₹{Math.round(amountNeededForFreeShipping).toLocaleString('en-IN')}</strong> for Free Shipping</span>
                   )}
                 </span>
                 <span className="text-[11px] font-bold text-zinc-500">{Math.round(progressToFreeShipping)}%</span>
@@ -161,7 +161,7 @@ export const CartDrawer: React.FC = () => {
                           </button>
                         </div>
                         <p className="text-[11px] font-semibold text-zinc-500">
-                          ${item.product.price.toFixed(2)} each
+                          ₹{Math.round(item.product.price).toLocaleString('en-IN')} each
                         </p>
                       </div>
 
@@ -184,7 +184,7 @@ export const CartDrawer: React.FC = () => {
                         </div>
 
                         <span className="text-xs font-black text-[#003882]">
-                          ${(item.product.price * item.quantity).toFixed(2)}
+                          ₹{Math.round(item.product.price * item.quantity).toLocaleString('en-IN')}
                         </span>
                       </div>
                     </div>
@@ -235,29 +235,29 @@ export const CartDrawer: React.FC = () => {
                 <div className="space-y-1.5 text-xs text-zinc-600 font-semibold">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span className="text-zinc-900">${cartSubtotal.toFixed(2)}</span>
+                    <span className="text-zinc-900">₹{Math.round(cartSubtotal).toLocaleString('en-IN')}</span>
                   </div>
 
                   {cartDiscount > 0 && (
                     <div className="flex justify-between text-red-600 font-bold">
                       <span>Discount</span>
-                      <span>-${cartDiscount.toFixed(2)}</span>
+                      <span>-₹{Math.round(cartDiscount).toLocaleString('en-IN')}</span>
                     </div>
                   )}
 
                   <div className="flex justify-between">
                     <span>Shipping</span>
-                    <span>{cartShippingFee === 0 ? <strong className="text-emerald-700">FREE</strong> : `$${cartShippingFee.toFixed(2)}`}</span>
+                    <span>{cartShippingFee === 0 ? <strong className="text-emerald-700">FREE</strong> : `₹${Math.round(cartShippingFee).toLocaleString('en-IN')}`}</span>
                   </div>
 
                   <div className="flex justify-between">
                     <span>Estimated Tax</span>
-                    <span>${cartTax.toFixed(2)}</span>
+                    <span>₹{Math.round(cartTax).toLocaleString('en-IN')}</span>
                   </div>
 
                   <div className="flex justify-between pt-2 border-t border-zinc-200 text-sm font-black text-zinc-900">
                     <span>Total Amount</span>
-                    <span className="text-[#003882]">${cartTotal.toFixed(2)}</span>
+                    <span className="text-[#003882]">₹{Math.round(cartTotal).toLocaleString('en-IN')}</span>
                   </div>
                 </div>
 

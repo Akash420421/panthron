@@ -62,7 +62,7 @@ export const CheckoutPage: React.FC = () => {
     setStep(3);
   };
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     const paymentDetails: PaymentDetails = {
       method: paymentMethod,
@@ -70,9 +70,13 @@ export const CheckoutPage: React.FC = () => {
       cardBrand: paymentMethod === 'credit_card' ? 'Visa' : paymentMethod
     };
 
-    const newOrder = createOrder(shippingAddress, paymentDetails);
-    setPlacedOrder(newOrder);
-    setStep(4);
+    try {
+      const newOrder = await createOrder(shippingAddress, paymentDetails);
+      setPlacedOrder(newOrder);
+      setStep(4);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   if (cart.length === 0 && step !== 4) {

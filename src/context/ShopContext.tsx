@@ -12,7 +12,8 @@ import {
   ShippingAddress,
   PaymentDetails,
   ProductReview,
-  Category
+  Category,
+  HeroSlide
 } from '../types';
 import { INITIAL_USER } from '../data/initialData';
 import {
@@ -113,8 +114,10 @@ interface ShopContextType {
   refreshCategories: () => Promise<void>;
 
   companySettings: CompanySettings;
+  heroSlides: HeroSlide[];
   refreshCompanySettings: () => Promise<void>;
   updateCompanySettings: (s: Partial<CompanySettings>) => Promise<void>;
+  updateHeroSlides: (slides: HeroSlide[]) => Promise<void>;
 }
 
 const DEFAULT_FILTERS: FilterState = {
@@ -152,7 +155,35 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     whatsapp: '+91 98765 43210',
     email: 'support@panthron.in',
     address: 'Panthron Store, India',
+    heroSlides: [
+      {
+        id: 'slide-slp',
+        image: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=1400&q=80',
+        productId: 'prod-slp-4',
+        alt: 'Panthron AirCushion Sleeper'
+      },
+      {
+        id: 'slide-1',
+        image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1400&q=80',
+        productId: 'prod-1',
+        alt: 'AuraSound Pro Headphones'
+      },
+      {
+        id: 'slide-2',
+        image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1400&q=80',
+        productId: 'prod-2',
+        alt: 'Horizon Smartwatch'
+      },
+      {
+        id: 'slide-3',
+        image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=1400&q=80',
+        productId: 'prod-3',
+        alt: 'Urban Leather Backpack'
+      }
+    ],
   });
+
+  const heroSlides = companySettings.heroSlides;
 
   const categories: Category[] = categoryObjs.map(c => c.name as any);
 
@@ -406,8 +437,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (appliedCoupon.maxDiscount && cartDiscount > (Number(appliedCoupon.maxDiscount) || 0)) cartDiscount = Number(appliedCoupon.maxDiscount) || 0;
     } else cartDiscount = Number(appliedCoupon.discountValue) || 0;
   }
-  const freeShippingThreshold = 75;
-  const cartShippingFee = cartSubtotal === 0 ? 0 : cartSubtotal >= freeShippingThreshold ? 0 : 12.00;
+  const freeShippingThreshold = 5000;
+  const cartShippingFee = cartSubtotal === 0 ? 0 : cartSubtotal >= freeShippingThreshold ? 0 : 99;
   const cartTax = Number(((cartSubtotal - cartDiscount) * 0.08).toFixed(2));
   const cartTotal = Number(Math.max(0, cartSubtotal - cartDiscount + cartShippingFee + cartTax).toFixed(2));
 
@@ -415,7 +446,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const trimmed = code.trim().toUpperCase();
     const found = coupons.find((c) => c.code.toUpperCase() === trimmed && c.isActive);
     if (!found) return { success: false, message: 'Invalid or expired promo code.' };
-    if (cartSubtotal < found.minPurchase) return { success: false, message: `Code requires a minimum spend of $${found.minPurchase.toFixed(2)}.` };
+    if (cartSubtotal < found.minPurchase) return { success: false, message: `Code requires a minimum spend of ₹${Math.round(found.minPurchase)}.` };
     setAppliedCoupon(found);
     addToast(`Promo code "${found.code}" applied!`, 'success');
     return { success: true, message: 'Coupon applied successfully!' };
@@ -502,7 +533,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateCompanySettings = async (s: Partial<CompanySettings>) => {
     try {
-      const existing = categoryObjs.length > -1;
       const row = mapSettingsToRow({ ...s, settingId: 'main' });
       const { data: existingData }: any = await insforge.database.from('company_settings').select('*').eq('setting_id', 'main');
       let err;
@@ -522,6 +552,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('updateCompanySettings error:', e);
       addToast('Failed to save settings: ' + (e.message || ''), 'error');
     }
+  };
+
+  const updateHeroSlides = async (slides: HeroSlide[]) => {
+    await updateCompanySettings({ heroSlides: slides });
   };
 
   const toggleWishlist = (product: Product) => {
@@ -634,7 +668,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toasts, addToast, removeToast,
         isSyncing,
         categories, categoryObjs, addCategory, updateCategory, deleteCategory, refreshCategories,
-        companySettings, refreshCompanySettings, updateCompanySettings,
+        companySettings, heroSlides, refreshCompanySettings, updateCompanySettings, updateHeroSlides,
       }}
     >
       {children}

@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 export const Footer: React.FC = () => {
-  const { navigateTo, setFilters, addToast } = useShop();
+  const { navigateTo, setFilters, addToast, companySettings } = useShop();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -22,7 +22,7 @@ export const Footer: React.FC = () => {
     e.preventDefault();
     if (email && email.includes('@')) {
       setSubscribed(true);
-      addToast('Thank you for subscribing to ShopZone VIP updates!', 'success');
+      addToast('Thank you for subscribing to PANTHRON VIP updates!', 'success');
       setEmail('');
     }
   };
@@ -172,32 +172,24 @@ export const Footer: React.FC = () => {
           <div>
             <h5 className="text-xs font-black uppercase text-zinc-900 tracking-wider mb-4">Store Info</h5>
             <div className="space-y-2 text-xs text-zinc-600 leading-relaxed font-medium">
-              <p><strong className="text-zinc-900">Address:</strong> 742 Commerce Way, NY 10001</p>
-              <p><strong className="text-zinc-900">Phone:</strong> +1 (800) 555-PANTHRON</p>
-              <p><strong className="text-zinc-900">Email:</strong> support@panthron.com</p>
+              {companySettings.address && (
+                <p><strong className="text-zinc-900">Address:</strong> {companySettings.address}</p>
+              )}
+              {companySettings.phone && (
+                <p><strong className="text-zinc-900">Phone:</strong> {companySettings.phone}</p>
+              )}
+              {companySettings.email && (
+                <p><strong className="text-zinc-900">Email:</strong> {companySettings.email}</p>
+              )}
               <p><strong className="text-zinc-900">Hours:</strong> Mon - Sun: 24/7 Support</p>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar & Payments */}
+        {/* Bottom Bar */}
         <div className="border-t border-zinc-200 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold text-zinc-500">
           <div className="flex items-center gap-1">
-            <span>© 2026 Panthron Inc. All rights reserved. Crafting smooth e-commerce experiences.</span>
-          </div>
-
-          {/* Payment Card Badges */}
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] font-bold flex items-center gap-1 text-zinc-600">
-              <Lock className="w-3 h-3 text-emerald-600" />
-              <span>Encrypted Checkout:</span>
-            </span>
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-1 bg-zinc-100 border border-zinc-200 rounded font-black text-[10px] text-zinc-800">VISA</span>
-              <span className="px-2 py-1 bg-zinc-100 border border-zinc-200 rounded font-black text-[10px] text-zinc-800">MC</span>
-              <span className="px-2 py-1 bg-zinc-100 border border-zinc-200 rounded font-black text-[10px] text-zinc-800">AMEX</span>
-              <span className="px-2 py-1 bg-zinc-100 border border-zinc-200 rounded font-black text-[10px] text-[#003882]">PAYPAL</span>
-            </div>
+            <span>© 2026 {companySettings.companyName || 'Panthron Inc.'}. All rights reserved. Crafting smooth e-commerce experiences.</span>
           </div>
         </div>
       </div>

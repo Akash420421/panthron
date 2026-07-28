@@ -3,65 +3,40 @@ import { useShop } from '../context/ShopContext';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-interface Slide {
-  id: string;
-  image: string;
-  productId: string;
-  alt: string;
-}
-
-const SLIDES: Slide[] = [
-  {
-    id: 'slide-slp',
-    image: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=1400&q=80',
-    productId: 'prod-slp-4',
-    alt: 'Panthron AirCushion Sleeper'
-  },
-  {
-    id: 'slide-1',
-    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1400&q=80',
-    productId: 'prod-1',
-    alt: 'AuraSound Pro Headphones'
-  },
-  {
-    id: 'slide-2',
-    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1400&q=80',
-    productId: 'prod-2',
-    alt: 'Horizon Smartwatch'
-  },
-  {
-    id: 'slide-3',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=1400&q=80',
-    productId: 'prod-3',
-    alt: 'Urban Leather Backpack'
-  }
-];
-
 export const HeroSlider: React.FC = () => {
-  const { navigateTo } = useShop();
+  const { navigateTo, heroSlides } = useShop();
+  const slides = heroSlides.length > 0 ? heroSlides : [];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Auto slide every 3.5 seconds
   useEffect(() => {
-    if (isHovered) return;
+    if (currentIndex >= slides.length && slides.length > 0) {
+      setCurrentIndex(0);
+    }
+  }, [slides.length, currentIndex]);
+
+  useEffect(() => {
+    if (isHovered || slides.length < 2) return;
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % SLIDES.length);
+      setCurrentIndex((prev) => (prev + 1) % slides.length);
     }, 3500);
     return () => clearInterval(timer);
-  }, [isHovered]);
+  }, [isHovered, slides.length]);
 
   const handlePrev = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentIndex((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
+    if (slides.length < 2) return;
+    setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentIndex((prev) => (prev + 1) % SLIDES.length);
+    if (slides.length < 2) return;
+    setCurrentIndex((prev) => (prev + 1) % slides.length);
   };
 
-  const currentSlide = SLIDES[currentIndex];
+  if (slides.length === 0) return null;
+  const currentSlide = slides[currentIndex];
 
   return (
     <div 
@@ -73,58 +48,59 @@ export const HeroSlider: React.FC = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide.id}
-            initial={{ opacity: 0, scale: 1.02 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.5 }}
-            onClick={() => navigateTo('product-detail', { productId: currentSlide.productId })}
-            className="relative w-full h-full cursor-pointer group"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.38, ease: 'easeInOut' }}
+            style={{ willChange: 'opacity' }}
+            onClick={() => currentSlide.productId && navigateTo('product-detail', { productId: currentSlide.productId })}
+            className={`relative w-full h-full ${currentSlide.productId ? 'cursor-pointer group' : ''}`}
           >
-            {/* Pure Full Slide Image */}
             <img
               src={currentSlide.image}
               alt={currentSlide.alt}
               referrerPolicy="no-referrer"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              className={`w-full h-full object-cover ${currentSlide.productId ? 'group-hover:scale-[1.03] transition-transform duration-500 ease-out' : ''}`}
             />
-            {/* Subtle Gradient Shadow on bottom for navigation visibility */}
             <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation Arrows */}
-        <button
-          onClick={handlePrev}
-          className="absolute left-3 top-1/2 -translate-y-1/2 p-2 sm:p-2.5 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/20 backdrop-blur-md transition-transform active:scale-90 z-20 shadow-md"
-          title="Previous Slide"
-        >
-          <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-        </button>
-
-        <button
-          onClick={handleNext}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-2 sm:p-2.5 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/20 backdrop-blur-md transition-transform active:scale-90 z-20 shadow-md"
-          title="Next Slide"
-        >
-          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-        </button>
-
-        {/* Dots Pagination */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
-          {SLIDES.map((slide, index) => (
+        {slides.length > 1 && (
+          <>
             <button
-              key={slide.id}
-              onClick={(e) => {
-                e.stopPropagation();
-                setCurrentIndex(index);
-              }}
-              className={`h-2 rounded-full transition-all ${
-                currentIndex === index ? 'w-6 bg-amber-400' : 'w-2 bg-white/50 hover:bg-white'
-              }`}
-              title={`Slide ${index + 1}`}
-            />
-          ))}
-        </div>
+              onClick={handlePrev}
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 sm:p-2.5 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/20 backdrop-blur-md transition-transform active:scale-90 z-20 shadow-md"
+              title="Previous Slide"
+            >
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+
+            <button
+              onClick={handleNext}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 sm:p-2.5 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/20 backdrop-blur-md transition-transform active:scale-90 z-20 shadow-md"
+              title="Next Slide"
+            >
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+              {slides.map((slide, index) => (
+                <button
+                  key={slide.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentIndex(index);
+                  }}
+                  className={`h-2 rounded-full transition-all ${
+                    currentIndex === index ? 'w-6 bg-amber-400' : 'w-2 bg-white/50 hover:bg-white'
+                  }`}
+                  title={`Slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

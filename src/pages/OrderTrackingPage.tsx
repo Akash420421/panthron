@@ -157,64 +157,67 @@ export const OrderTrackingPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-[#003882]/10 to-amber-500/5 border border-amber-500/20 rounded-3xl p-6 space-y-4 text-xs">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-amber-400" />
-              Need Help? Contact {companySettings.companyName}
+          <div className="bg-gradient-to-br from-zinc-900 via-[#14120d] to-[#1a1305] border border-amber-500/30 rounded-3xl p-6 space-y-4 text-xs shadow-xl shadow-black/20 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_top_right,_rgba(245,158,11,0.4),_transparent_60%)]" />
+            <h3 className="text-base font-black text-white flex items-center gap-2 relative">
+              <div className="w-9 h-9 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
+                <Building2 className="w-4 h-4 text-amber-400" />
+              </div>
+              Need Help? Contact <span className="text-amber-400">{companySettings.companyName || 'PANTHRON Official'}</span>
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-3 relative">
               {companySettings.memberName && (
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700/60">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
                     <User className="w-4 h-4 text-amber-400" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase text-zinc-500">Contact Person</p>
-                    <p className="text-zinc-200 font-semibold">{companySettings.memberName}</p>
+                    <p className="text-[10px] font-black uppercase text-amber-400/80 tracking-widest">Contact Person</p>
+                    <p className="text-zinc-100 font-bold text-sm">{companySettings.memberName}</p>
                   </div>
                 </div>
               )}
               {companySettings.phone && (
-                <a href={`tel:${companySettings.phone.replace(/\s/g, '')}`} className="flex items-center gap-2.5 hover:bg-zinc-800/40 p-2 rounded-lg transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                <a href={`tel:${companySettings.phone.replace(/\s/g, '')}`} className="flex items-center gap-3 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700/60 hover:bg-zinc-800 hover:border-amber-500/40 transition-colors">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
                     <Phone className="w-4 h-4 text-amber-400" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase text-zinc-500">Call</p>
-                    <p className="text-amber-400 font-semibold">{companySettings.phone}</p>
+                    <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Call</p>
+                    <p className="text-amber-400 font-bold text-sm">{companySettings.phone}</p>
                   </div>
                 </a>
               )}
               {companySettings.whatsapp && (
-                <a href={`https://wa.me/${companySettings.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 hover:bg-zinc-800/40 p-2 rounded-lg transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                <a href={`https://wa.me/${companySettings.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700/60 hover:bg-zinc-800 hover:border-emerald-500/50 transition-colors">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center shrink-0">
                     <MessageCircle className="w-4 h-4 text-emerald-400" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase text-zinc-500">WhatsApp</p>
-                    <p className="text-emerald-400 font-semibold">{companySettings.whatsapp}</p>
+                    <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">WhatsApp</p>
+                    <p className="text-emerald-400 font-bold text-sm">{companySettings.whatsapp}</p>
                   </div>
                 </a>
               )}
               {companySettings.email && (
-                <a href={`mailto:${companySettings.email}`} className="flex items-center gap-2.5 hover:bg-zinc-800/40 p-2 rounded-lg transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                <a href={`mailto:${companySettings.email}`} className="flex items-center gap-3 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700/60 hover:bg-zinc-800 hover:border-sky-500/50 transition-colors">
+                  <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/40 flex items-center justify-center shrink-0">
                     <Mail className="w-4 h-4 text-sky-400" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase text-zinc-500">Email</p>
-                    <p className="text-sky-400 font-semibold">{companySettings.email}</p>
+                    <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Email</p>
+                    <p className="text-sky-400 font-bold text-sm">{companySettings.email}</p>
                   </div>
                 </a>
               )}
               {companySettings.address && (
-                <div className="flex items-start gap-2.5 pt-1 border-t border-zinc-800/60">
-                  <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="flex items-start gap-3 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700/60 pt-3 mt-2 border-t-2 border-amber-500/30">
+                  <div className="w-9 h-9 rounded-xl bg-rose-500/15 border border-rose-500/40 flex items-center justify-center shrink-0 mt-0.5">
                     <MapPin className="w-4 h-4 text-rose-400" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase text-zinc-500">Store Address</p>
-                    <p className="text-zinc-300">{companySettings.address}</p>
+                    <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Store Address</p>
+                    <p className="text-zinc-200 font-semibold text-sm leading-relaxed">{companySettings.address}</p>
                   </div>
                 </div>
               )}

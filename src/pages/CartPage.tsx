@@ -33,7 +33,7 @@ export const CartPage: React.FC = () => {
   const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState('');
 
-  const freeShippingThreshold = 75;
+  const freeShippingThreshold = 5000;
   const progressToFreeShipping = Math.min(100, (cartSubtotal / freeShippingThreshold) * 100);
   const amountNeeded = Math.max(0, freeShippingThreshold - cartSubtotal);
 
@@ -104,7 +104,7 @@ export const CartPage: React.FC = () => {
                   {amountNeeded === 0 ? (
                     <span className="text-emerald-400 font-bold">Free Express Shipping Unlocked!</span>
                   ) : (
-                    <span>Add <strong className="text-amber-400">${amountNeeded.toFixed(2)}</strong> more for Free Shipping</span>
+                    <span>Add <strong className="text-amber-400">₹{Math.round(amountNeeded).toLocaleString('en-IN')}</strong> more for Free Shipping</span>
                   )}
                 </span>
                 <span className="text-xs font-bold text-zinc-400">{Math.round(progressToFreeShipping)}%</span>
@@ -159,7 +159,7 @@ export const CartPage: React.FC = () => {
                   {/* Total Line & Remove */}
                   <div className="flex items-center gap-4 sm:gap-6">
                     <span className="text-sm font-extrabold text-amber-400">
-                      ${(item.product.price * item.quantity).toFixed(2)}
+                      ₹{Math.round(item.product.price * item.quantity).toLocaleString('en-IN')}
                     </span>
                     <button
                       onClick={() => removeFromCart(item.product.id)}

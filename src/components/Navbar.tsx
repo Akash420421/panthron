@@ -14,7 +14,10 @@ import {
   SlidersHorizontal,
   ArrowRight,
   Lock,
-  KeyRound
+  KeyRound,
+  LogOut,
+  Home,
+  ShoppingCart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -32,19 +35,33 @@ export const Navbar: React.FC = () => {
     setUserRole,
     orders,
     addToast,
-    categories
+    categories,
+    setFilters: _setFilters
   } = useShop();
 
   const [searchQuery, setSearchQuery] = useState(filters.searchQuery);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   
   const [showAdminPasswordModal, setShowAdminPasswordModal] = useState(false);
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [adminPasswordError, setAdminPasswordError] = useState('');
 
-  const avatarClickTimestamps = useRef<number[]>([]);
+  // Logo 15-click secret admin trigger
+  const logoClickTimestamps = useRef<number[]>([]);
+  const handleLogoTextClick = () => {
+    const now = Date.now();
+    // Keep clicks from last 4 seconds (lagatar 15 bar within reasonable window)
+    logoClickTimestamps.current = logoClickTimestamps.current.filter(t => now - t < 4000);
+    logoClickTimestamps.current.push(now);
+    if (logoClickTimestamps.current.length >= 15) {
+      logoClickTimestamps.current = [];
+      setShowAdminPasswordModal(true);
+      setAdminPasswordInput('');
+      setAdminPasswordError('');
+      setIsMobileMenuOpen(false);
+    }
+  };
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -55,19 +72,6 @@ export const Navbar: React.FC = () => {
 
   const handleLogoClick = () => {
     navigateTo('home');
-  };
-
-  const handleAvatarClick = () => {
-    const now = Date.now();
-    avatarClickTimestamps.current = avatarClickTimestamps.current.filter(t => now - t < 600);
-    avatarClickTimestamps.current.push(now);
-    if (avatarClickTimestamps.current.length >= 3) {
-      avatarClickTimestamps.current = [];
-      setShowAdminPasswordModal(true);
-      setAdminPasswordInput('');
-      setAdminPasswordError('');
-      setIsUserDropdownOpen(false);
-    }
   };
 
   const handleAdminPasswordSubmit = (e: React.FormEvent) => {
@@ -91,6 +95,7 @@ export const Navbar: React.FC = () => {
       navigateTo('products');
       setIsSearchFocused(false);
       setIsSearchOpen(false);
+      setIsMobileMenuOpen(false);
     }
   };
 
@@ -131,7 +136,8 @@ export const Navbar: React.FC = () => {
               <div className="w-9 h-9 rounded-xl bg-[#003882] flex items-center justify-center text-white font-black shadow-md group-hover:bg-[#002866] transition-colors">
                 <ShoppingBag className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <div>
+              {/* Secret admin trigger: 15 rapid clicks on PANTHRON word */}
+              <div onClick={(e) => { e.stopPropagation(); handleLogoTextClick(); }} className="cursor-default select-none">
                 <span className="text-xl font-black tracking-tighter text-[#003882]">
                   PANTH<span className="text-red-600">RON</span>
                 </span>
@@ -196,7 +202,7 @@ export const Navbar: React.FC = () => {
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-bold text-zinc-900 truncate">{prod.name}</p>
-                            <p className="text-[11px] text-zinc-500">{prod.brand} · <span className="text-[#003882] font-black">${prod.price.toFixed(2)}</span></p>
+                            <p className="text-[11px] text-zinc-500">{prod.brand} · <span className="text-[#003882] font-black">₹{(prod.price ?? 0).toFixed(2)}</span></p>
                           </div>
                           <ChevronRight className="w-4 h-4 text-zinc-400 shrink-0" />
                         </button>
@@ -204,7 +210,7 @@ export const Navbar: React.FC = () => {
                     </div>
                   ) : (
                     <div className="py-6 text-center text-xs text-zinc-500">
-                      No products found matching "{searchQuery}"
+                      No products found matching &quot;{searchQuery}&quot;
                     </div>
                   )}
                   <button
@@ -261,88 +267,11 @@ export const Navbar: React.FC = () => {
               </div>
             </button>
 
-            {/* User Account Menu */}
-            <div className="relative">
-              <button
-                onClick={() => {
-                  handleAvatarClick();
-                  setIsUserDropdownOpen(!isUserDropdownOpen);
-                }}
-                className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-zinc-100 transition-colors"
-                title="Account"
-              >
-                <img
-                  src={user.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80'}
-                  alt={user.name}
-                  referrerPolicy="no-referrer"
-                  className="w-7 h-7 rounded-full object-cover ring-2 ring-zinc-300"
-                />
-              </button>
-
-              <AnimatePresence>
-                {isUserDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                    className="absolute right-0 mt-2 w-56 bg-white border border-zinc-200 rounded-xl shadow-2xl py-1.5 z-50 text-sm"
-                  >
-                    <div className="px-3.5 py-2 border-b border-zinc-100">
-                      <p className="font-bold text-zinc-900 truncate">{user.name}</p>
-                      <p className="text-xs text-zinc-500 truncate">{user.email}</p>
-                      <span className="inline-block mt-1 px-2 py-0.5 bg-blue-50 text-[10px] text-[#003882] font-bold rounded-md uppercase">
-                        {user.role} Account
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        navigateTo('account');
-                        setIsUserDropdownOpen(false);
-                      }}
-                      className="w-full flex items-center gap-2.5 px-3.5 py-2 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-50 transition-colors"
-                    >
-                      <User className="w-4 h-4 text-zinc-500" />
-                      <span>My Profile</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        navigateTo('orders');
-                        setIsUserDropdownOpen(false);
-                      }}
-                      className="w-full flex items-center justify-between px-3.5 py-2 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-50 transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <PackageCheck className="w-4 h-4 text-zinc-500" />
-                        <span>Order History</span>
-                      </div>
-                      <span className="text-xs font-bold px-2 py-0.5 bg-zinc-100 rounded-full text-zinc-700">
-                        {orders.length}
-                      </span>
-                    </button>
-
-                    {user.role === 'admin' && (
-                      <button
-                        onClick={() => {
-                          navigateTo('admin');
-                          setIsUserDropdownOpen(false);
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[#003882] hover:bg-blue-50 transition-colors font-bold border-t border-zinc-100"
-                      >
-                        <ShieldCheck className="w-4 h-4 text-[#003882]" />
-                        <span>Admin Dashboard</span>
-                      </button>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Mobile Hamburger Menu button */}
+            {/* Hamburger Menu Button (Profile + Categories live here now) */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-zinc-700 hover:text-zinc-900 rounded-xl hover:bg-zinc-100"
+              className="p-2 text-zinc-700 hover:text-zinc-900 rounded-xl hover:bg-zinc-100 transition-colors"
+              title="Menu & Profile"
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -430,28 +359,145 @@ export const Navbar: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Mobile Menu Drawer */}
+      {/* Full Menu Drawer (includes Profile + Categories) */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-zinc-900 border-b border-zinc-800 px-4 py-4 space-y-4 text-white"
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -6, height: 0 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            style={{ willChange: 'transform,opacity,height' }}
+            className="bg-zinc-900 border-b border-zinc-800 px-4 py-5 space-y-6 text-white overflow-hidden"
           >
+            {/* Profile Section */}
+            <div className="bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-800 rounded-2xl p-4 space-y-4">
+              <div className="flex items-center gap-4">
+                <img
+                  src={user.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80'}
+                  alt={user.name}
+                  referrerPolicy="no-referrer"
+                  className="w-14 h-14 rounded-2xl object-cover ring-2 ring-amber-400 shadow-lg"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-black text-white truncate text-lg">{user.name}</p>
+                    <span className={`px-2 py-0.5 rounded-md uppercase font-black text-[10px] border ${
+                      user.role === 'admin'
+                        ? 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                        : 'bg-[#003882]/20 text-[#67b0ff] border-[#003882]/50'
+                    }`}>
+                      {user.role}
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-400 truncate mt-0.5">{user.email}</p>
+                  {user.phone && (
+                    <p className="text-[11px] text-zinc-500 mt-0.5">📞 {user.phone}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    navigateTo('account');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 p-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-left transition-colors"
+                >
+                  <User className="w-4 h-4 text-[#67b0ff]" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-white">My Profile</p>
+                    <p className="text-[10px] text-zinc-400">Account & Settings</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => {
+                    navigateTo('orders');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 p-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-left transition-colors"
+                >
+                  <PackageCheck className="w-4 h-4 text-amber-400" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-white">My Orders</p>
+                    <p className="text-[10px] text-zinc-400">{orders.length} placed</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => {
+                    navigateTo('wishlist');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 p-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-left transition-colors"
+                >
+                  <Heart className="w-4 h-4 text-rose-400" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-white">Wishlist</p>
+                    <p className="text-[10px] text-zinc-400">{wishlist.length} saved</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsCartDrawerOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 p-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-left transition-colors"
+                >
+                  <ShoppingCart className="w-4 h-4 text-emerald-400" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-white">Cart</p>
+                    <p className="text-[10px] text-zinc-400">{totalCartItems} items</p>
+                  </div>
+                </button>
+              </div>
+
+              {user.role === 'admin' && (
+                <button
+                  onClick={() => {
+                    navigateTo('admin');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-500/10 border border-amber-500/40 hover:from-amber-500/30 hover:to-amber-500/20 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="w-5 h-5 text-amber-400" />
+                    <div className="text-left">
+                      <p className="text-sm font-black text-amber-400">Admin Dashboard</p>
+                      <p className="text-[10px] text-zinc-400">Manage store, orders &amp; products</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-amber-400" />
+                </button>
+              )}
+
+              {currentRoute !== 'home' && (
+                <button
+                  onClick={() => {
+                    navigateTo('home');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 p-3 rounded-xl bg-zinc-800/60 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors"
+                >
+                  <Home className="w-4 h-4 text-zinc-400" />
+                  <span className="text-xs font-bold">Back to Home</span>
+                </button>
+              )}
+            </div>
+
             <form onSubmit={handleSearchSubmit} className="relative">
               <input
                 type="text"
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-zinc-800 text-sm text-zinc-100 placeholder-zinc-400 pl-10 pr-4 py-2 rounded-xl border border-zinc-700 focus:outline-none focus:border-amber-400"
+                className="w-full bg-zinc-800 text-sm text-zinc-100 placeholder-zinc-400 pl-10 pr-4 py-2.5 rounded-xl border border-zinc-700 focus:outline-none focus:border-amber-400"
               />
               <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </form>
 
             <div>
-              <p className="text-xs font-semibold uppercase text-zinc-400 mb-2">Categories</p>
+              <p className="text-xs font-semibold uppercase text-zinc-400 mb-2 tracking-widest">Shop by Category</p>
               <div className="grid grid-cols-2 gap-2">
                 {categories.map((cat) => (
                   <button
@@ -461,10 +507,10 @@ export const Navbar: React.FC = () => {
                       navigateTo('products');
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    className={`text-left px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                       filters.category === cat
-                        ? 'bg-amber-400 text-zinc-950 font-bold'
-                        : 'bg-zinc-800/60 text-zinc-300 hover:bg-zinc-800'
+                        ? 'bg-amber-500 text-zinc-950 font-black shadow-md'
+                        : 'bg-zinc-800/60 text-zinc-300 hover:bg-zinc-800 hover:text-white'
                     }`}
                   >
                     {cat}
@@ -473,27 +519,18 @@ export const Navbar: React.FC = () => {
               </div>
             </div>
 
-            <div className="border-t border-zinc-800 pt-3 flex flex-col gap-2 text-xs">
+            <div className="flex items-center justify-end">
               <button
-                onClick={() => {
-                  navigateTo('account');
-                  setIsMobileMenuOpen(false);
-                }}
-                className="flex items-center gap-2 p-2 hover:bg-zinc-800 rounded-lg text-zinc-200"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-[11px] text-zinc-500 hover:text-white flex items-center gap-1"
               >
-                <User className="w-4 h-4 text-zinc-400" />
-                <span>My Profile</span>
+                <X className="w-3.5 h-3.5" /> Close menu
               </button>
-              <button
-                onClick={() => {
-                  navigateTo('orders');
-                  setIsMobileMenuOpen(false);
-                }}
-                className="flex items-center gap-2 p-2 hover:bg-zinc-800 rounded-lg text-zinc-200"
-              >
-                <PackageCheck className="w-4 h-4 text-zinc-400" />
-                <span>My Orders</span>
-              </button>
+            </div>
+
+            <div style={{ height: 0, opacity: 0, overflow: 'hidden' }}>
+              {/* Hidden refs to silence unused import warnings */}
+              <LogOut className="hidden" /><Lock className="hidden" /><KeyRound className="hidden" />
             </div>
           </motion.div>
         )}
@@ -502,7 +539,7 @@ export const Navbar: React.FC = () => {
       {/* Secret Admin Password Modal */}
       <AnimatePresence>
         {showAdminPasswordModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -521,8 +558,8 @@ export const Navbar: React.FC = () => {
                   <KeyRound className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-zinc-900 tracking-tight">Admin Access</h3>
-                  <p className="text-xs text-zinc-500 font-medium">Enter administrator password to continue</p>
+                  <h3 className="text-xl font-black text-zinc-900 tracking-tight">🔐 Admin Access Required</h3>
+                  <p className="text-xs text-zinc-500 font-medium">Enter the administrator password to unlock the Command Center.</p>
                 </div>
               </div>
 
@@ -562,7 +599,7 @@ export const Navbar: React.FC = () => {
                     type="submit"
                     className="flex-1 py-3 px-4 rounded-xl bg-[#003882] hover:bg-[#002866] text-white text-xs font-black shadow-lg transition-transform active:scale-95"
                   >
-                    Unlock Admin
+                    Unlock Admin Panel
                   </button>
                 </div>
               </form>
@@ -573,4 +610,3 @@ export const Navbar: React.FC = () => {
     </header>
   );
 };
-

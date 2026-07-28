@@ -16,14 +16,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
-  // Format currency display (e.g. $ or ₹)
   const formatPrice = (val: number) => `$${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
     <motion.div
-      whileHover={{ y: -3 }}
-      transition={{ duration: 0.18 }}
-      className="group relative bg-[#F5F5F7] border border-zinc-200/80 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-all"
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.12, ease: 'easeOut' }}
+      style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
+      className="group relative bg-[#F5F5F7] border border-zinc-200/80 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow"
     >
       {/* Image Container with Studio Light background */}
       <div 

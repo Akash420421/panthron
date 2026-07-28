@@ -186,18 +186,18 @@ export const ProductDetailPage: React.FC = () => {
 
           {/* Quantity & Actions */}
           <div className="pt-4 border-t border-zinc-200 space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center bg-zinc-100 border border-zinc-300 rounded-xl overflow-hidden p-1">
+            <div className="grid grid-cols-2 sm:grid-cols-[auto_1fr_auto_auto] items-center gap-3">
+              <div className="flex items-center bg-zinc-100 border border-zinc-300 rounded-xl overflow-hidden p-1 w-full sm:w-auto col-span-2 sm:col-span-1">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-3 py-1.5 text-zinc-700 hover:text-zinc-900 font-bold"
+                  className="flex-1 sm:flex-none px-3 sm:px-3 py-1.5 text-zinc-700 hover:text-zinc-900 font-bold"
                 >
                   <Minus className="w-3.5 h-3.5" />
                 </button>
-                <span className="px-4 text-sm font-black text-zinc-900">{quantity}</span>
+                <span className="px-4 text-sm font-black text-zinc-900 text-center">{quantity}</span>
                 <button
                   onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                  className="px-3 py-1.5 text-zinc-700 hover:text-zinc-900 font-bold"
+                  className="flex-1 sm:flex-none px-3 sm:px-3 py-1.5 text-zinc-700 hover:text-zinc-900 font-bold"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
@@ -205,15 +205,15 @@ export const ProductDetailPage: React.FC = () => {
 
               <button
                 onClick={() => addToCart(product, quantity)}
-                className="flex-1 bg-[#003882] hover:bg-[#002866] text-white font-black py-3.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-transform active:scale-95"
+                className="col-span-2 sm:col-span-1 bg-[#003882] hover:bg-[#002866] text-white font-black py-3.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-transform active:scale-95 w-full"
               >
                 <ShoppingCart className="w-4 h-4" />
-                <span>Add to Cart (${((product.price ?? 0) * (quantity ?? 0)).toFixed(2)})</span>
+                <span>Add to Cart (₹{((product.price ?? 0) * (quantity ?? 0)).toFixed(2)})</span>
               </button>
 
               <button
                 onClick={() => toggleWishlist(product)}
-                className={`p-3.5 rounded-xl border transition-colors ${
+                className={`p-3.5 rounded-xl border transition-colors flex items-center justify-center ${
                   isLiked
                     ? 'bg-rose-50 border-rose-300 text-rose-600'
                     : 'bg-zinc-100 border-zinc-300 text-zinc-700 hover:text-zinc-900'
@@ -225,7 +225,7 @@ export const ProductDetailPage: React.FC = () => {
 
               <button
                 onClick={handleShare}
-                className="p-3.5 bg-zinc-100 border border-zinc-300 rounded-xl text-zinc-700 hover:text-zinc-900"
+                className="p-3.5 bg-zinc-100 border border-zinc-300 rounded-xl text-zinc-700 hover:text-zinc-900 flex items-center justify-center"
                 title="Share Link"
               >
                 <Share2 className="w-4 h-4" />
@@ -237,7 +237,7 @@ export const ProductDetailPage: React.FC = () => {
                 addToCart(product, quantity);
                 navigateTo('checkout');
               }}
-              className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black py-3.5 rounded-xl text-xs transition-colors"
+              className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black py-3.5 rounded-xl text-xs transition-colors shadow-md active:scale-[0.98]"
             >
               Buy Now with Express Checkout
             </button>
@@ -247,7 +247,7 @@ export const ProductDetailPage: React.FC = () => {
           <div className="grid grid-cols-3 gap-2 p-3 bg-white rounded-xl border border-zinc-200 text-[11px] text-zinc-600 font-bold text-center shadow-xs">
             <div className="flex flex-col items-center gap-1">
               <Truck className="w-4 h-4 text-[#003882]" />
-              <span>Free Shipping over $75</span>
+              <span>Free Shipping over ₹5000</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <RotateCcw className="w-4 h-4 text-[#003882]" />

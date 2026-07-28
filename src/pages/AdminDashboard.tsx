@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useShop } from '../context/ShopContext';
-import { Product, Coupon, OrderStatus, Category } from '../types';
+import { Product, Coupon, OrderStatus, Category, HeroSlide, Order } from '../types';
 import { 
   BarChart3, 
   Package, 
@@ -24,7 +24,19 @@ import {
   Mail,
   MapPin,
   MessageCircle,
-  Settings
+  Settings,
+  Images,
+  ChevronUp,
+  ChevronDown,
+  Link as LinkIcon,
+  Eye,
+  FileText,
+  Truck,
+  CreditCard,
+  Calendar,
+  Hash,
+  User,
+  Home
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -48,9 +60,21 @@ export const AdminDashboard: React.FC = () => {
     deleteCategory,
     companySettings,
     updateCompanySettings,
+    heroSlides,
+    updateHeroSlides,
   } = useShop();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'coupons' | 'categories' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'coupons' | 'categories' | 'hero-slides' | 'settings'>('overview');
+
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  const [hsNewImage, setHsNewImage] = useState('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1400&q=80');
+  const [hsNewProductId, setHsNewProductId] = useState('');
+  const [hsNewAlt, setHsNewAlt] = useState('');
+  const [hsEditingId, setHsEditingId] = useState<string | null>(null);
+  const [hsEdImage, setHsEdImage] = useState('');
+  const [hsEdProductId, setHsEdProductId] = useState('');
+  const [hsEdAlt, setHsEdAlt] = useState('');
 
   const [productSearch, setProductSearch] = useState('');
 
@@ -315,6 +339,16 @@ export const AdminDashboard: React.FC = () => {
         </button>
 
         <button
+          onClick={() => setActiveTab('hero-slides')}
+          className={`px-5 py-3 border-b-2 flex items-center gap-2 transition-colors ${
+            activeTab === 'hero-slides' ? 'border-amber-500 text-amber-400' : 'border-transparent text-zinc-400 hover:text-white'
+          }`}
+        >
+          <Images className="w-4 h-4" />
+          <span>Hero Slider ({heroSlides.length})</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('settings')}
           className={`px-5 py-3 border-b-2 flex items-center gap-2 transition-colors ${
             activeTab === 'settings' ? 'border-amber-500 text-amber-400' : 'border-transparent text-zinc-400 hover:text-white'
@@ -486,7 +520,15 @@ export const AdminDashboard: React.FC = () => {
               {orders.map((o) => (
                 <tr key={o.id} className="hover:bg-zinc-800/40">
                   <td className="p-3.5 font-mono font-bold text-amber-400">{o.id}</td>
-                  <td className="p-3.5 font-bold text-white">{o.userName}</td>
+                  <td className="p-3.5">
+                    <button
+                      onClick={() => setSelectedOrder(o)}
+                      className="font-bold text-white hover:text-amber-400 hover:underline text-left transition-colors flex items-center gap-1.5 group"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-zinc-500 group-hover:text-amber-400" />
+                      {o.userName}
+                    </button>
+                  </td>
                   <td className="p-3.5 text-zinc-400">{new Date(o.createdAt).toLocaleDateString()}</td>
                   <td className="p-3.5 font-bold text-white">${(o.total ?? 0).toFixed(2)}</td>
                   <td className="p-3.5">
@@ -619,6 +661,196 @@ export const AdminDashboard: React.FC = () => {
                 )}
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'hero-slides' && (
+        <div className="space-y-4">
+          <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                <Images className="w-4 h-4 text-amber-400" />
+                Add New Hero Slide
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
+              <div className="md:col-span-5">
+                <label className="block text-zinc-300 font-semibold mb-1">Image URL</label>
+                <input type="text" value={hsNewImage} onChange={(e) => setHsNewImage(e.target.value)} className="w-full bg-zinc-800 text-zinc-100 p-2 rounded-xl border border-zinc-700" />
+              </div>
+              <div className="md:col-span-4">
+                <label className="block text-zinc-300 font-semibold mb-1">Link to Product (optional)</label>
+                <select value={hsNewProductId} onChange={(e) => setHsNewProductId(e.target.value)} className="w-full bg-zinc-800 text-zinc-100 p-2 rounded-xl border border-zinc-700">
+                  <option value="">— No link (just image) —</option>
+                  {products.map(p => (<option key={p.id} value={p.id}>{p.name} ({p.id})</option>))}
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-zinc-300 font-semibold mb-1">Alt Text</label>
+                <input type="text" value={hsNewAlt} onChange={(e) => setHsNewAlt(e.target.value)} placeholder="e.g. Summer Sale" className="w-full bg-zinc-800 text-zinc-100 p-2 rounded-xl border border-zinc-700" />
+              </div>
+              <div className="md:col-span-1 flex items-end">
+                <button
+                  onClick={() => {
+                    if (!hsNewImage.trim()) return;
+                    const newSlide: HeroSlide = {
+                      id: 'slide-' + Date.now(),
+                      image: hsNewImage.trim(),
+                      productId: hsNewProductId,
+                      alt: hsNewAlt.trim() || 'Hero banner',
+                    };
+                    void updateHeroSlides([...heroSlides, newSlide]);
+                    setHsNewImage('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1400&q=80');
+                    setHsNewProductId('');
+                    setHsNewAlt('');
+                  }}
+                  className="w-full bg-amber-500 text-zinc-950 font-bold px-3 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" /> Add
+                </button>
+              </div>
+            </div>
+            {hsNewImage && (
+              <div className="pt-2">
+                <p className="text-[10px] text-zinc-400 mb-1 font-semibold uppercase tracking-wider">Preview</p>
+                <img src={hsNewImage} alt="preview" referrerPolicy="no-referrer" className="w-full h-32 sm:h-40 object-cover rounded-xl border border-zinc-700 bg-zinc-800" />
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {heroSlides.map((slide, idx) => {
+              const linkedProduct = products.find(p => p.id === slide.productId);
+              const isEditing = hsEditingId === slide.id;
+              return (
+                <div key={slide.id} className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+                  <div className="relative aspect-[16/7] bg-zinc-800">
+                    <img src={slide.image} alt={slide.alt} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                    <div className="absolute top-2 left-2 flex gap-1.5">
+                      <span className="px-2 py-0.5 bg-black/70 backdrop-blur text-amber-400 font-black text-[10px] rounded border border-amber-500/30">
+                        #{idx + 1}
+                      </span>
+                      {slide.productId && (
+                        <span className="px-2 py-0.5 bg-sky-500/90 text-white font-bold text-[10px] rounded flex items-center gap-1">
+                          <LinkIcon className="w-3 h-3" /> Linked
+                        </span>
+                      )}
+                    </div>
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <button
+                        onClick={() => {
+                          if (idx === 0) return;
+                          const newList = [...heroSlides];
+                          [newList[idx - 1], newList[idx]] = [newList[idx], newList[idx - 1]];
+                          void updateHeroSlides(newList);
+                        }}
+                        disabled={idx === 0}
+                        className="p-1.5 bg-black/70 backdrop-blur text-white rounded-lg disabled:opacity-30 hover:bg-zinc-700"
+                        title="Move up"
+                      ><ChevronUp className="w-3.5 h-3.5" /></button>
+                      <button
+                        onClick={() => {
+                          if (idx === heroSlides.length - 1) return;
+                          const newList = [...heroSlides];
+                          [newList[idx + 1], newList[idx]] = [newList[idx], newList[idx + 1]];
+                          void updateHeroSlides(newList);
+                        }}
+                        disabled={idx === heroSlides.length - 1}
+                        className="p-1.5 bg-black/70 backdrop-blur text-white rounded-lg disabled:opacity-30 hover:bg-zinc-700"
+                        title="Move down"
+                      ><ChevronDown className="w-3.5 h-3.5" /></button>
+                    </div>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    {isEditing ? (
+                      <div className="space-y-2 text-xs">
+                        <div>
+                          <label className="block text-zinc-300 font-semibold mb-1">Image URL</label>
+                          <input type="text" value={hsEdImage} onChange={(e) => setHsEdImage(e.target.value)} className="w-full bg-zinc-800 text-zinc-100 p-2 rounded-lg border border-zinc-700" />
+                        </div>
+                        <div>
+                          <label className="block text-zinc-300 font-semibold mb-1">Link to Product</label>
+                          <select value={hsEdProductId} onChange={(e) => setHsEdProductId(e.target.value)} className="w-full bg-zinc-800 text-zinc-100 p-2 rounded-lg border border-zinc-700">
+                            <option value="">— No link —</option>
+                            {products.map(p => (<option key={p.id} value={p.id}>{p.name}</option>))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-zinc-300 font-semibold mb-1">Alt Text</label>
+                          <input type="text" value={hsEdAlt} onChange={(e) => setHsEdAlt(e.target.value)} className="w-full bg-zinc-800 text-zinc-100 p-2 rounded-lg border border-zinc-700" />
+                        </div>
+                        <div className="flex gap-2 pt-1">
+                          <button
+                            onClick={() => {
+                              const updated = heroSlides.map(s => s.id === slide.id ? {
+                                ...s,
+                                image: hsEdImage.trim() || s.image,
+                                productId: hsEdProductId,
+                                alt: hsEdAlt.trim()
+                              } : s);
+                              void updateHeroSlides(updated);
+                              setHsEditingId(null);
+                            }}
+                            className="flex-1 bg-amber-500 text-zinc-950 font-bold p-2 rounded-lg flex items-center justify-center gap-1"
+                          ><Check className="w-3.5 h-3.5" /> Save</button>
+                          <button
+                            onClick={() => setHsEditingId(null)}
+                            className="px-3 bg-zinc-800 text-zinc-400 rounded-lg hover:text-white"
+                          ><X className="w-3.5 h-3.5" /></button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="space-y-1">
+                          <p className="text-xs text-zinc-400 font-semibold uppercase tracking-wider">Alt Text</p>
+                          <p className="text-sm font-bold text-white">{slide.alt || '—'}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs text-zinc-400 font-semibold uppercase tracking-wider">Linked Product</p>
+                          {linkedProduct ? (
+                            <div className="flex items-center gap-2">
+                              <img src={linkedProduct.images[0]} alt={linkedProduct.name} referrerPolicy="no-referrer" className="w-8 h-8 rounded-lg object-cover bg-zinc-800 border border-zinc-700" />
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-white truncate">{linkedProduct.name}</p>
+                                <p className="text-[11px] text-amber-400 font-semibold">ID: {linkedProduct.id}</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-zinc-500 italic">Not linked to any product</p>
+                          )}
+                        </div>
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={() => {
+                              setHsEditingId(slide.id);
+                              setHsEdImage(slide.image);
+                              setHsEdProductId(slide.productId);
+                              setHsEdAlt(slide.alt);
+                            }}
+                            className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-bold p-2 rounded-xl text-xs flex items-center justify-center gap-1.5"
+                          ><Edit3 className="w-3.5 h-3.5" /> Edit</button>
+                          <button
+                            onClick={() => {
+                              void updateHeroSlides(heroSlides.filter(s => s.id !== slide.id));
+                            }}
+                            className="px-3 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 rounded-xl border border-rose-500/20"
+                            title="Delete slide"
+                          ><Trash2 className="w-3.5 h-3.5" /></button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {heroSlides.length === 0 && (
+              <div className="md:col-span-2 bg-zinc-900 border border-dashed border-zinc-700 p-10 rounded-2xl text-center">
+                <Images className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
+                <p className="text-white font-bold">No hero slides yet.</p>
+                <p className="text-xs text-zinc-400 mt-1">Add your first banner using the form above.</p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -917,6 +1149,172 @@ export const AdminDashboard: React.FC = () => {
                 </div>
                 <button type="submit" className="w-full bg-amber-500 text-zinc-950 font-bold py-3 rounded-xl">Save Promo Code</button>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-2xl relative">
+              <div className="sticky top-0 bg-zinc-900/95 backdrop-blur border-b border-zinc-800 p-5 flex items-start justify-between gap-4 z-10">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-black text-white text-lg flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-amber-400" />
+                      Order Details
+                    </h3>
+                    <span className="px-2.5 py-0.5 bg-amber-500/15 text-amber-400 font-black text-[10px] rounded-lg border border-amber-500/30 font-mono">
+                      {selectedOrder.id}
+                    </span>
+                    <span className={`px-2.5 py-0.5 font-black text-[10px] rounded-lg border capitalize ${
+                      selectedOrder.status === 'delivered' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' :
+                      selectedOrder.status === 'cancelled' ? 'bg-rose-500/15 text-rose-400 border-rose-500/30' :
+                      selectedOrder.status === 'shipped' || selectedOrder.status === 'out_for_delivery' ? 'bg-sky-500/15 text-sky-400 border-sky-500/30' :
+                      'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                    }`}>
+                      {selectedOrder.status.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 font-semibold flex items-center gap-1.5">
+                    <Calendar className="w-3 h-3" />
+                    Placed: {new Date(selectedOrder.createdAt).toLocaleString()}
+                    {selectedOrder.couponCode && (
+                      <span className="ml-2 px-2 py-0.5 bg-violet-500/15 text-violet-400 rounded border border-violet-500/30 font-bold">
+                        Coupon: {selectedOrder.couponCode}
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <button onClick={() => setSelectedOrder(null)} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl shrink-0 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-5 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="bg-zinc-950/60 border border-zinc-800 p-3.5 rounded-2xl space-y-1">
+                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                      <User className="w-3 h-3" /> Customer
+                    </p>
+                    <p className="text-sm font-black text-white">{selectedOrder.userName}</p>
+                    <p className="text-[11px] text-zinc-300 flex items-center gap-1 mt-0.5"><Mail className="w-3 h-3 text-zinc-500" /> {selectedOrder.userEmail || '—'}</p>
+                    <p className="text-[11px] text-zinc-300 flex items-center gap-1"><Phone className="w-3 h-3 text-zinc-500" /> {selectedOrder.shippingAddress?.phone || '—'}</p>
+                  </div>
+                  <div className="bg-zinc-950/60 border border-zinc-800 p-3.5 rounded-2xl space-y-1">
+                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                      <Hash className="w-3 h-3" /> Tracking
+                    </p>
+                    <p className="text-sm font-black text-amber-400 font-mono break-all">{selectedOrder.trackingNumber || '—'}</p>
+                    <p className="text-[11px] text-zinc-300 flex items-center gap-1 mt-0.5">
+                      <Truck className="w-3 h-3 text-zinc-500" />
+                      Est. Delivery: <span className="font-bold text-white ml-0.5">{selectedOrder.estimatedDelivery || '—'}</span>
+                    </p>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">{selectedOrder.items.length} item{selectedOrder.items.length !== 1 ? 's' : ''} ordered</p>
+                  </div>
+                  <div className="bg-zinc-950/60 border border-amber-500/30 p-3.5 rounded-2xl space-y-1.5">
+                    <p className="text-[10px] text-amber-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                      <CreditCard className="w-3 h-3" /> Payment
+                    </p>
+                    <div className="flex justify-between text-[11px]"><span className="text-zinc-400">Subtotal</span><span className="text-white font-bold">${(selectedOrder.subtotal ?? 0).toFixed(2)}</span></div>
+                    <div className="flex justify-between text-[11px]"><span className="text-zinc-400">Discount</span><span className="text-emerald-400 font-bold">-${(selectedOrder.discount ?? 0).toFixed(2)}</span></div>
+                    <div className="flex justify-between text-[11px]"><span className="text-zinc-400">Shipping</span><span className="text-white font-bold">${(selectedOrder.shippingFee ?? 0).toFixed(2)}</span></div>
+                    <div className="flex justify-between text-[11px]"><span className="text-zinc-400">Tax</span><span className="text-white font-bold">${(selectedOrder.tax ?? 0).toFixed(2)}</span></div>
+                    <div className="pt-1.5 mt-1.5 border-t border-zinc-800 flex justify-between items-baseline">
+                      <span className="text-zinc-300 font-bold">TOTAL</span>
+                      <span className="text-lg font-black text-amber-400">${(selectedOrder.total ?? 0).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-zinc-950/60 border border-zinc-800 rounded-2xl overflow-hidden">
+                  <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+                    <h4 className="font-black text-white text-sm flex items-center gap-2">
+                      <ShoppingBag className="w-4 h-4 text-amber-400" />
+                      Items Ordered ({selectedOrder.items.length})
+                    </h4>
+                  </div>
+                  <div className="divide-y divide-zinc-800/70">
+                    {selectedOrder.items.length === 0 ? (
+                      <p className="p-6 text-center text-zinc-500 text-xs italic">No items record found for this order.</p>
+                    ) : selectedOrder.items.map((it, i) => (
+                      <div key={i} className="p-4 flex items-center gap-3 hover:bg-zinc-800/30 transition-colors">
+                        {it.productImage ? (
+                          <img src={it.productImage} alt={it.productName} referrerPolicy="no-referrer" className="w-14 h-14 rounded-xl object-cover bg-zinc-800 border border-zinc-700 shrink-0" />
+                        ) : (
+                          <div className="w-14 h-14 rounded-xl bg-zinc-800 border border-zinc-700 shrink-0 flex items-center justify-center text-zinc-600"><Package className="w-6 h-6" /></div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-white text-sm truncate">{it.productName}</p>
+                          <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-[11px] text-zinc-400">
+                            <span className="font-mono">SKU: {it.productId || '—'}</span>
+                            {it.color && <span>Color: <span className="text-zinc-300 font-semibold">{it.color}</span></span>}
+                            {it.size && <span>Size: <span className="text-zinc-300 font-semibold">{it.size}</span></span>}
+                            <span>Qty: <span className="text-white font-bold">×{it.quantity}</span></span>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-black text-amber-400">${(it.price * it.quantity).toFixed(2)}</p>
+                          <p className="text-[10px] text-zinc-500">${(it.price ?? 0).toFixed(2)} each</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-zinc-950/60 border border-zinc-800 p-4 rounded-2xl space-y-2">
+                    <h4 className="font-black text-white text-xs flex items-center gap-1.5 uppercase tracking-wider">
+                      <Home className="w-3.5 h-3.5 text-amber-400" /> Shipping Address
+                    </h4>
+                    {selectedOrder.shippingAddress ? (
+                      <div className="space-y-0.5 text-[12px] text-zinc-200 pl-5">
+                        <p className="font-bold text-white text-sm">{selectedOrder.shippingAddress.fullName}</p>
+                        {selectedOrder.shippingAddress.street && <p>{selectedOrder.shippingAddress.street}</p>}
+                        {(selectedOrder.shippingAddress.city || selectedOrder.shippingAddress.state || selectedOrder.shippingAddress.zipCode) && (
+                          <p>{[selectedOrder.shippingAddress.city, selectedOrder.shippingAddress.state, selectedOrder.shippingAddress.zipCode].filter(Boolean).join(', ')}</p>
+                        )}
+                        {selectedOrder.shippingAddress.country && <p>{selectedOrder.shippingAddress.country}</p>}
+                        {selectedOrder.shippingAddress.phone && <p className="text-zinc-400 pt-1 flex items-center gap-1"><Phone className="w-3 h-3" /> {selectedOrder.shippingAddress.phone}</p>}
+                      </div>
+                    ) : (
+                      <p className="text-zinc-500 text-xs italic pl-5">No shipping address on file.</p>
+                    )}
+                  </div>
+
+                  <div className="bg-zinc-950/60 border border-zinc-800 p-4 rounded-2xl space-y-2">
+                    <h4 className="font-black text-white text-xs flex items-center gap-1.5 uppercase tracking-wider">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" /> Status Timeline
+                    </h4>
+                    <div className="space-y-2 pl-5">
+                      {Array.isArray(selectedOrder.timeline) && selectedOrder.timeline.length > 0 ? (
+                        selectedOrder.timeline.slice().reverse().map((t, i) => (
+                          <div key={i} className="relative pl-4 pb-2 border-l-2 border-zinc-700 last:pb-0 last:border-transparent">
+                            <div className={`absolute -left-[7px] top-0 w-3 h-3 rounded-full border-2 border-zinc-900 ${
+                              i === 0 ? 'bg-amber-400 ring-2 ring-amber-400/30' : 'bg-zinc-600'
+                            }`} />
+                            <p className="font-bold text-white text-[11px] capitalize">{t.status?.replace(/_/g, ' ')}</p>
+                            <p className="text-[10px] text-zinc-400">{t.timestamp}</p>
+                            <p className="text-[11px] text-zinc-300 mt-0.5">{t.description}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-zinc-500 text-xs italic">No timeline entries yet.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex justify-end">
+                  <button
+                    onClick={() => setSelectedOrder(null)}
+                    className="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs flex items-center gap-1.5"
+                  >
+                    <X className="w-3.5 h-3.5" /> Close Details
+                  </button>
+                </div>
+              </div>
             </motion.div>
           </div>
         )}
