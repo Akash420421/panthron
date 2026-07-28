@@ -372,16 +372,10 @@ export const Navbar: React.FC = () => {
           >
             {/* Profile Section */}
             <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 space-y-4">
-              <div className="flex items-center gap-4">
-                <img
-                  src={user.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80'}
-                  alt={user.name}
-                  referrerPolicy="no-referrer"
-                  className="w-13 h-13 rounded-2xl object-cover ring-2 ring-[#003882]/30 shadow-sm"
-                />
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-extrabold text-zinc-900 truncate text-base">{user.name}</p>
+                    <p className="font-black text-zinc-900 truncate text-base">{user.name}</p>
                     <span className={`px-2 py-0.5 rounded uppercase font-black text-[10px] border ${
                       user.role === 'admin'
                         ? 'bg-[#003882] text-white border-[#003882]'
@@ -392,10 +386,11 @@ export const Navbar: React.FC = () => {
                   </div>
                   <p className="text-xs text-zinc-500 truncate mt-0.5">{user.email}</p>
                   {user.phone && (
-                    <p className="text-[11px] text-zinc-400 mt-0.5">📞 {user.phone}</p>
+                    <p className="text-[11px] text-zinc-600 font-semibold mt-0.5">📞 {user.phone}</p>
                   )}
                 </div>
               </div>
+
 
               <div className="grid grid-cols-2 gap-2">
                 <button

@@ -14,11 +14,12 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  Truck
+  Truck,
+  X
 } from 'lucide-react';
 
 export const OrderTrackingPage: React.FC = () => {
-  const { orders, selectedOrderId, currentRoute, navigateTo, companySettings } = useShop();
+  const { orders, selectedOrderId, currentRoute, navigateTo, companySettings, cancelOrder } = useShop();
   const [searchIdInput, setSearchIdInput] = useState('');
 
   // If user selected a specific order or is in 'order-detail' route
@@ -117,6 +118,20 @@ export const OrderTrackingPage: React.FC = () => {
             <p className="text-xs text-zinc-500 mt-1 font-medium">
               Placed on {new Date(order.createdAt).toLocaleDateString()} · Ref: <span className="font-mono text-zinc-700">{order.id}</span>
             </p>
+
+            {(order.status === 'pending' || order.status === 'processing') && (
+              <button
+                onClick={() => {
+                  if (window.confirm(`Are you sure you want to cancel Order ${order.id}?`)) {
+                    cancelOrder(order.id);
+                  }
+                }}
+                className="mt-3 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors inline-flex items-center gap-1.5"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>Cancel This Order</span>
+              </button>
+            )}
           </div>
 
           <div className="text-left sm:text-right text-xs space-y-1 bg-zinc-50 border border-zinc-200/80 p-3 rounded-2xl">
@@ -125,6 +140,7 @@ export const OrderTrackingPage: React.FC = () => {
             <p className="text-[11px] text-zinc-600 font-medium">{deliveryMsg}</p>
           </div>
         </div>
+
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Order Items & Subtotal */}

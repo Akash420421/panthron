@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export const AccountPage: React.FC = () => {
-  const { user, updateUserProfile, orders, wishlist, navigateTo, companySettings } = useShop();
+  const { user, updateUserProfile, updateUserAddress, cancelOrder, orders, wishlist, navigateTo, companySettings } = useShop();
 
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'addresses'>('profile');
 
@@ -26,16 +26,58 @@ export const AccountPage: React.FC = () => {
   const [avatarInput, setAvatarInput] = useState('');
   const [showAvatarInput, setShowAvatarInput] = useState(false);
 
+  // Address edit state
+  const defaultAddress = user.addresses?.[0] || {
+    fullName: user.name || '',
+    email: user.email || '',
+    phone: user.phone || '',
+    street: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'India',
+    isDefault: true
+  };
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [addrStreet, setAddrStreet] = useState(defaultAddress.street);
+  const [addrCity, setAddrCity] = useState(defaultAddress.city);
+  const [addrState, setAddrState] = useState(defaultAddress.state);
+  const [addrZip, setAddrZip] = useState(defaultAddress.zipCode);
+  const [addrCountry, setAddrCountry] = useState(defaultAddress.country);
+
   useEffect(() => {
     setName(user.name);
     setEmail(user.email);
     setPhone(user.phone || '');
     setAvatarUrl(user.avatar || '');
+    if (user.addresses?.[0]) {
+      setAddrStreet(user.addresses[0].street);
+      setAddrCity(user.addresses[0].city);
+      setAddrState(user.addresses[0].state);
+      setAddrZip(user.addresses[0].zipCode);
+      setAddrCountry(user.addresses[0].country);
+    }
   }, [user]);
 
   const handleProfileSave = (e: React.FormEvent) => {
     e.preventDefault();
     updateUserProfile({ name, email, phone, avatar: avatarUrl });
+  };
+
+  const handleAddressSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateUserAddress({
+      fullName: name || user.name,
+      email: email || user.email,
+      phone: phone || user.phone || '',
+      street: addrStreet,
+      city: addrCity,
+      state: addrState,
+      zipCode: addrZip,
+      country: addrCountry,
+      isDefault: true
+    });
+    setIsEditingAddress(false);
   };
 
   return (
@@ -130,6 +172,8 @@ export const AccountPage: React.FC = () => {
                     ? `Arriving in approximately ${Math.max(1, diffDays)} day${Math.max(1, diffDays) !== 1 ? 's' : ''}`
                     : `Estimated delivery in ${diffDays + 1} day${diffDays + 1 !== 1 ? 's' : ''}`;
 
+              const canCancel = order.status === 'pending' || order.status === 'processing';
+
               return (
                 <div
                   key={order.id}
@@ -159,7 +203,7 @@ export const AccountPage: React.FC = () => {
                     📦 {deliveryMsg}
                   </p>
 
-                  <div className="flex items-center justify-between gap-4">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3 overflow-x-auto no-scrollbar">
                       {order.items.map((item, idx) => (
                         <img
@@ -172,13 +216,28 @@ export const AccountPage: React.FC = () => {
                       ))}
                     </div>
 
-                    <button
-                      onClick={() => navigateTo('order-detail', { orderId: order.id })}
-                      className="bg-[#003882] hover:bg-[#002866] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 shrink-0 shadow-xs"
-                    >
-                      <span>View Details</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {canCancel && (
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Are you sure you want to cancel Order ${order.id}?`)) {
+                              cancelOrder(order.id);
+                            }
+                          }}
+                          className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-3 py-2 rounded-xl text-xs transition-colors"
+                        >
+                          Cancel Order
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => navigateTo('order-detail', { orderId: order.id })}
+                        className="bg-[#003882] hover:bg-[#002866] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 shrink-0 shadow-xs"
+                      >
+                        <span>View Details</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   {(companySettings.phone || companySettings.whatsapp) && (
@@ -303,29 +362,110 @@ export const AccountPage: React.FC = () => {
       )}
 
       {activeTab === 'addresses' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {user.addresses.length === 0 ? (
-            <div className="md:col-span-2 bg-white border border-zinc-200 rounded-2xl p-8 text-center space-y-2 shadow-xs">
-              <MapPin className="w-8 h-8 text-zinc-400 mx-auto" />
-              <p className="text-xs text-zinc-500">No saved addresses yet.</p>
-            </div>
-          ) : user.addresses.map((addr, idx) => (
-            <div key={idx} className="bg-white border border-zinc-200 rounded-2xl p-5 space-y-2 text-xs shadow-xs">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-zinc-900">{addr.fullName}</span>
-                {addr.isDefault && (
-                  <span className="px-2 py-0.5 bg-blue-50 text-[#003882] border border-blue-200 text-[10px] font-bold rounded">
-                    Default Address
-                  </span>
-                )}
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-bold text-zinc-900">Your Delivery Addresses</h2>
+            <button
+              onClick={() => setIsEditingAddress(!isEditingAddress)}
+              className="bg-[#003882] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 hover:bg-[#002866]"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+              <span>{isEditingAddress ? 'Cancel Edit' : 'Edit Address'}</span>
+            </button>
+          </div>
+
+          {isEditingAddress && (
+            <form onSubmit={handleAddressSave} className="bg-zinc-50 border border-zinc-200 rounded-2xl p-5 space-y-3 text-xs">
+              <h3 className="font-bold text-zinc-900 text-xs">Update Address Details</h3>
+              <div>
+                <label className="block text-zinc-700 font-bold mb-1">Street Address / House No.</label>
+                <input
+                  type="text"
+                  required
+                  value={addrStreet}
+                  onChange={(e) => setAddrStreet(e.target.value)}
+                  className="w-full bg-white text-zinc-900 p-2.5 rounded-xl border border-zinc-300"
+                />
               </div>
-              <p className="text-zinc-700">{addr.street}</p>
-              <p className="text-zinc-700">{addr.city}, {addr.state} {addr.zipCode}</p>
-              <p className="text-zinc-500">{addr.country}</p>
-            </div>
-          ))}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-zinc-700 font-bold mb-1">City</label>
+                  <input
+                    type="text"
+                    required
+                    value={addrCity}
+                    onChange={(e) => setAddrCity(e.target.value)}
+                    className="w-full bg-white text-zinc-900 p-2.5 rounded-xl border border-zinc-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-zinc-700 font-bold mb-1">State</label>
+                  <input
+                    type="text"
+                    value={addrState}
+                    onChange={(e) => setAddrState(e.target.value)}
+                    className="w-full bg-white text-zinc-900 p-2.5 rounded-xl border border-zinc-300"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-zinc-700 font-bold mb-1">Zip / Pin Code</label>
+                  <input
+                    type="text"
+                    required
+                    value={addrZip}
+                    onChange={(e) => setAddrZip(e.target.value)}
+                    className="w-full bg-white text-zinc-900 p-2.5 rounded-xl border border-zinc-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-zinc-700 font-bold mb-1">Country</label>
+                  <input
+                    type="text"
+                    value={addrCountry}
+                    onChange={(e) => setAddrCountry(e.target.value)}
+                    className="w-full bg-white text-zinc-900 p-2.5 rounded-xl border border-zinc-300"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="bg-[#003882] text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-1 hover:bg-[#002866]"
+              >
+                <Check className="w-4 h-4" /> Save Address
+              </button>
+            </form>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {user.addresses.length === 0 ? (
+              <div className="md:col-span-2 bg-white border border-zinc-200 rounded-2xl p-8 text-center space-y-2 shadow-xs">
+                <MapPin className="w-8 h-8 text-zinc-400 mx-auto" />
+                <p className="text-xs text-zinc-500">No saved addresses yet.</p>
+              </div>
+            ) : user.addresses.map((addr, idx) => (
+              <div key={idx} className="bg-white border border-zinc-200 rounded-2xl p-5 space-y-2 text-xs shadow-xs">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-zinc-900">{addr.fullName}</span>
+                  {addr.isDefault && (
+                    <span className="px-2 py-0.5 bg-blue-50 text-[#003882] border border-blue-200 text-[10px] font-bold rounded">
+                      Default Address
+                    </span>
+                  )}
+                </div>
+                <p className="text-zinc-700">{addr.street}</p>
+                <p className="text-zinc-700">{addr.city}, {addr.state} {addr.zipCode}</p>
+                <p className="text-zinc-500">{addr.country}</p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
 };
+

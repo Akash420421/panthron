@@ -88,11 +88,16 @@ interface ShopContextType {
   setUserRole: (role: 'customer' | 'admin') => void;
   toggleUserRole: () => void;
   updateUserProfile: (data: Partial<User>) => void;
+  updateUserAddress: (address: ShippingAddress) => void;
+  completeOnboarding: (data: { name: string; phone: string; email: string; address: ShippingAddress; avatar: string; gender: 'male' | 'female' }) => void;
+  registeredUsers: User[];
 
   orders: Order[];
   createOrder: (shippingAddress: ShippingAddress, paymentDetails: PaymentDetails) => Promise<Order>;
   updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
+  cancelOrder: (orderId: string) => Promise<void>;
   refreshOrders: () => Promise<void>;
+
   
   cartSubtotal: number;
   cartDiscount: number;
@@ -636,6 +641,116 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
 
+  const [registeredUsers, setRegisteredUsers] = useState<User[]>(() => {
+    const saved = localStorage.getItem('sz_registered_users');
+    if (saved) return JSON.parse(saved);
+    return [
+      {
+        id: 'usr-admin-1',
+        name: 'Akash Singh',
+        email: 'support@panthron.in',
+        phone: '+91 98765 43210',
+        role: 'admin',
+        gender: 'male',
+        hasCompletedOnboarding: true,
+        avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Akash',
+        addresses: [
+          {
+            fullName: 'Akash Singh',
+            email: 'support@panthron.in',
+            phone: '+91 98765 43210',
+            street: 'Panthron HQ, Main Street',
+            city: 'New Delhi',
+            state: 'Delhi',
+            zipCode: '110001',
+            country: 'India',
+            isDefault: true
+          }
+        ],
+        createdAt: '2026-01-15'
+      }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sz_registered_users', JSON.stringify(registeredUsers));
+  }, [registeredUsers]);
+
+  const completeOnboarding = (data: {
+    name: string;
+    phone: string;
+    email: string;
+    address: ShippingAddress;
+    avatar: string;
+    gender: 'male' | 'female';
+  }) => {
+    const updatedUser: User = {
+      ...user,
+      name: data.name,
+      phone: data.phone,
+      email: data.email,
+      avatar: data.avatar,
+      gender: data.gender,
+      hasCompletedOnboarding: true,
+      addresses: [data.address]
+    };
+    setUser(updatedUser);
+    setRegisteredUsers((prev) => {
+      const exists = prev.some(u => u.id === updatedUser.id || u.email === updatedUser.email);
+      if (exists) {
+        return prev.map(u => (u.id === updatedUser.id || u.email === updatedUser.email) ? updatedUser : u);
+      }
+      return [updatedUser, ...prev];
+    });
+    addToast('Profile setup complete! Welcome to PANTHRON.', 'success');
+  };
+
+  const updateUserAddress = (address: ShippingAddress) => {
+    setUser((prev) => {
+      const updated = {
+        ...prev,
+        addresses: [address]
+      };
+      setRegisteredUsers((rUsers) => rUsers.map(u => u.id === prev.id ? updated : u));
+      return updated;
+    });
+    addToast('Shipping address updated successfully!', 'success');
+  };
+
+  const cancelOrder = async (orderId: string) => {
+    try {
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+      if (order.status === 'delivered' || order.status === 'cancelled') {
+        addToast('This order cannot be cancelled.', 'error');
+        return;
+      }
+      const newEntry = { status: 'cancelled' as OrderStatus, timestamp: new Date().toLocaleString(), description: 'Order cancelled by customer.' };
+      const newTimeline = [...order.timeline, newEntry];
+      const { error } = await insforge.database.from('orders').update({ status: 'cancelled', timeline: newTimeline }).eq('order_id', orderId);
+      if (error) throw new Error(error.message || JSON.stringify(error));
+
+      // Restore product stock
+      const stockUpdates = order.items.map(item => {
+        const product = products.find(p => p.id === item.productId);
+        if (product) {
+          const restoredStock = product.stock + item.quantity;
+          return insforge.database.from('products').update({ stock: restoredStock }).eq('product_id', item.productId);
+        }
+        return Promise.resolve();
+      });
+      await Promise.all(stockUpdates);
+
+      await Promise.all([refreshOrders(), refreshProducts()]);
+      addToast(`Order ${orderId} has been cancelled successfully.`, 'info');
+    } catch (e: any) {
+      console.error('cancelOrder error:', e);
+      addToast('Failed to cancel order: ' + (e.message || ''), 'error');
+    }
+  };
+
+
+
   const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
     const statusDescriptions: Record<OrderStatus, string> = {
       pending: 'Order confirmed and awaiting fulfillment',
@@ -672,8 +787,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         coupons, appliedCoupon, applyCouponCode, removeCoupon,
         addCoupon, toggleCouponStatus, deleteCoupon, refreshCoupons,
         wishlist, toggleWishlist, isInWishlist,
-        user, setUserRole, toggleUserRole, updateUserProfile,
-        orders, createOrder, updateOrderStatus, refreshOrders,
+        user, setUserRole, toggleUserRole, updateUserProfile, updateUserAddress, completeOnboarding, registeredUsers,
+        orders, createOrder, updateOrderStatus, cancelOrder, refreshOrders,
+
         cartSubtotal, cartDiscount, cartShippingFee, cartTax, cartTotal,
         toasts, addToast, removeToast,
         isSyncing,

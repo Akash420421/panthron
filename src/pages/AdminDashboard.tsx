@@ -62,9 +62,12 @@ export const AdminDashboard: React.FC = () => {
     updateCompanySettings,
     heroSlides,
     updateHeroSlides,
+    registeredUsers,
   } = useShop();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'coupons' | 'categories' | 'hero-slides' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'users' | 'coupons' | 'categories' | 'hero-slides' | 'settings'>('overview');
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
@@ -319,6 +322,17 @@ export const AdminDashboard: React.FC = () => {
         </button>
 
         <button
+          onClick={() => setActiveTab('users')}
+          className={`px-5 py-3 border-b-2 flex items-center gap-2 transition-colors ${
+            activeTab === 'users' ? 'border-amber-500 text-amber-400' : 'border-transparent text-zinc-400 hover:text-white'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          <span>Users ({registeredUsers.length})</span>
+        </button>
+
+
+        <button
           onClick={() => setActiveTab('coupons')}
           className={`px-5 py-3 border-b-2 flex items-center gap-2 transition-colors ${
             activeTab === 'coupons' ? 'border-amber-500 text-amber-400' : 'border-transparent text-zinc-400 hover:text-white'
@@ -552,7 +566,98 @@ export const AdminDashboard: React.FC = () => {
         </div>
       )}
 
+      {activeTab === 'users' && (
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-zinc-900 p-4 rounded-2xl border border-zinc-800">
+            <div>
+              <h3 className="font-bold text-white text-sm">Registered Customer Directory</h3>
+              <p className="text-xs text-zinc-400">View customer profile details, phone numbers, and delivery addresses.</p>
+            </div>
+            <div className="w-full sm:w-72 relative">
+              <input
+                type="text"
+                placeholder="Search user by name, phone, email..."
+                value={userSearchQuery}
+                onChange={(e) => setUserSearchQuery(e.target.value)}
+                className="w-full bg-zinc-800 text-xs text-zinc-100 pl-9 pr-3 py-2 rounded-xl border border-zinc-700 focus:outline-none focus:border-amber-500"
+              />
+              <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {registeredUsers
+              .filter(u => 
+                !userSearchQuery ||
+                u.name.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+                u.email.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+                (u.phone && u.phone.includes(userSearchQuery))
+              )
+              .map((u) => {
+                const mainAddress = u.addresses?.[0];
+                return (
+                  <div key={u.id} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-4 text-xs hover:border-zinc-700 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={u.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + u.name}
+                        alt={u.name}
+                        referrerPolicy="no-referrer"
+                        className="w-12 h-12 rounded-xl object-cover bg-zinc-800 border border-zinc-700 shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-white text-sm truncate">{u.name}</h4>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase border ${
+                            u.role === 'admin' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                          }`}>
+                            {u.role}
+                          </span>
+                        </div>
+                        <p className="text-zinc-400 truncate mt-0.5">{u.email}</p>
+                        {u.phone && (
+                          <a href={`tel:${u.phone.replace(/\s/g, '')}`} className="text-amber-400 font-bold hover:underline block mt-0.5">
+                            📞 {u.phone}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="bg-zinc-800/80 border border-zinc-700/50 p-3 rounded-xl space-y-1 text-zinc-300">
+                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Primary Delivery Address</p>
+                      {mainAddress ? (
+                        <>
+                          <p className="font-semibold text-white">{mainAddress.fullName}</p>
+                          <p className="text-zinc-300">{mainAddress.street}</p>
+                          <p className="text-zinc-300">{mainAddress.city}, {mainAddress.state} {mainAddress.zipCode}</p>
+                          <p className="text-zinc-400">{mainAddress.country}</p>
+                        </>
+                      ) : (
+                        <p className="text-zinc-500 italic">No address provided yet.</p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-zinc-800 text-[11px] text-zinc-500">
+                      <span>Joined: {u.createdAt || 'Recent'}</span>
+                      {u.phone && (
+                        <a
+                          href={`https://wa.me/${u.phone.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-emerald-400 font-bold hover:underline"
+                        >
+                          💬 WhatsApp User
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
       {activeTab === 'coupons' && (
+
         <div className="space-y-4">
           <div className="flex justify-between items-center bg-zinc-900 p-4 rounded-2xl border border-zinc-800">
             <h3 className="font-bold text-white text-sm">Active Promo Codes</h3>

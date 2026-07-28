@@ -6,8 +6,10 @@ import { BottomNav } from './components/BottomNav';
 import { ToastContainer } from './components/ToastContainer';
 import { QuickViewModal } from './components/QuickViewModal';
 import { CartDrawer } from './components/CartDrawer';
+import { OnboardingModal } from './components/OnboardingModal';
 
 import { HomePage } from './pages/HomePage';
+
 import { ProductsPage } from './pages/ProductsPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { CartPage } from './pages/CartPage';
@@ -54,10 +56,12 @@ const AppContent: React.FC = () => {
       <BottomNav />
       <CartDrawer />
       <QuickViewModal />
+      <OnboardingModal />
       <ToastContainer />
     </div>
   );
 };
+
 
 export default function App() {
   return (

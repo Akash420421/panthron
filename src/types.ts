@@ -124,9 +124,12 @@ export interface User {
   role: 'customer' | 'admin';
   avatar?: string;
   phone?: string;
+  gender?: 'male' | 'female';
+  hasCompletedOnboarding?: boolean;
   addresses: ShippingAddress[];
   createdAt: string;
 }
+
 
 export interface FilterState {
   searchQuery: string;
