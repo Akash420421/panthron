@@ -7,6 +7,8 @@ import { ToastContainer } from './components/ToastContainer';
 import { QuickViewModal } from './components/QuickViewModal';
 import { CartDrawer } from './components/CartDrawer';
 import { OnboardingModal } from './components/OnboardingModal';
+import { AuthModal } from './components/AuthModal';
+
 
 import { HomePage } from './pages/HomePage';
 
@@ -57,7 +59,9 @@ const AppContent: React.FC = () => {
       <CartDrawer />
       <QuickViewModal />
       <OnboardingModal />
+      <AuthModal />
       <ToastContainer />
+
     </div>
   );
 };

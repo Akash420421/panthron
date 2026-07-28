@@ -48,7 +48,9 @@ export const AdminDashboard: React.FC = () => {
     deleteProduct, 
     orders, 
     updateOrderStatus, 
+    deleteOrder,
     coupons, 
+
     addCoupon, 
     toggleCouponStatus, 
     deleteCoupon, 
@@ -528,6 +530,7 @@ export const AdminDashboard: React.FC = () => {
                 <th className="p-3.5">Date</th>
                 <th className="p-3.5">Total</th>
                 <th className="p-3.5">Status</th>
+                <th className="p-3.5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/80">
@@ -544,7 +547,7 @@ export const AdminDashboard: React.FC = () => {
                     </button>
                   </td>
                   <td className="p-3.5 text-zinc-400">{new Date(o.createdAt).toLocaleDateString()}</td>
-                  <td className="p-3.5 font-bold text-white">${(o.total ?? 0).toFixed(2)}</td>
+                  <td className="p-3.5 font-bold text-white">₹{(o.total ?? 0).toFixed(2)}</td>
                   <td className="p-3.5">
                     <select
                       value={o.status}
@@ -559,8 +562,22 @@ export const AdminDashboard: React.FC = () => {
                       <option value="cancelled">Cancelled</option>
                     </select>
                   </td>
+                  <td className="p-3.5 text-right">
+                    <button
+                      onClick={() => {
+                        if (window.confirm(`Permanently delete Order #${o.id}? This action cannot be undone.`)) {
+                          deleteOrder(o.id);
+                        }
+                      }}
+                      className="p-1.5 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 rounded-lg transition-colors"
+                      title="Delete Order"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
                 </tr>
               ))}
+
             </tbody>
           </table>
         </div>

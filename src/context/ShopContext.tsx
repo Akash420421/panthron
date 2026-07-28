@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+
 import { 
   Product, 
   CartItem, 
@@ -93,13 +94,19 @@ interface ShopContextType {
   registeredUsers: User[];
   isOnboardingModalOpen: boolean;
   setIsOnboardingModalOpen: (open: boolean) => void;
-
+  isAuthModalOpen: boolean;
+  setIsAuthModalOpen: (open: boolean) => void;
+  loginUser: (email: string, password: string) => Promise<boolean>;
+  registerUser: (userData: any) => Promise<boolean>;
+  logoutUser: () => void;
 
   orders: Order[];
   createOrder: (shippingAddress: ShippingAddress, paymentDetails: PaymentDetails) => Promise<Order>;
   updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
   cancelOrder: (orderId: string) => Promise<void>;
+  deleteOrder: (orderId: string) => Promise<void>;
   refreshOrders: () => Promise<void>;
+
 
   
   cartSubtotal: number;
@@ -766,6 +773,105 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
 
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const loginUser = async (email: string, password: string): Promise<boolean> => {
+    const foundUser = registeredUsers.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase()
+    );
+
+    if (foundUser) {
+      setUser(foundUser);
+      addToast(`Welcome back, ${foundUser.name}!`, 'success');
+      return true;
+    }
+
+    if (email.toLowerCase() === 'support@panthron.in' || email.toLowerCase() === 'admin@panthron.in') {
+      const adminUser: User = {
+        id: 'usr-admin-1',
+        name: 'Akash Singh',
+        email: 'support@panthron.in',
+        role: 'admin',
+        phone: '+91 98765 43210',
+        hasCompletedOnboarding: true,
+        addresses: registeredUsers[0]?.addresses || [],
+        createdAt: '2026-01-01'
+      };
+
+      setUser(adminUser);
+      addToast('Logged in as Admin (Akash Singh)!', 'success');
+      return true;
+    }
+
+    const newCustomer: User = {
+      id: 'usr-' + Math.floor(100000 + Math.random() * 900000),
+      name: email.split('@')[0],
+      email: email,
+      role: 'customer',
+      phone: '',
+      hasCompletedOnboarding: false,
+      addresses: [],
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    setUser(newCustomer);
+    setRegisteredUsers((prev) => [newCustomer, ...prev]);
+    addToast(`Signed in as ${newCustomer.name}!`, 'success');
+    return true;
+  };
+
+  const registerUser = async (userData: any): Promise<boolean> => {
+    const newUserId = 'usr-' + Math.floor(100000 + Math.random() * 900000);
+    const newUser: User = {
+      id: newUserId,
+      name: userData.name,
+      email: userData.email,
+      role: 'customer',
+      avatar: userData.avatar,
+      phone: userData.phone,
+      gender: userData.gender,
+      hasCompletedOnboarding: true,
+      addresses: [userData.address],
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+
+    setUser(newUser);
+    setRegisteredUsers((prev) => [newUser, ...prev.filter(u => u.email !== newUser.email)]);
+    addToast(`Welcome to PANTHRON, ${newUser.name}!`, 'success');
+    return true;
+  };
+
+  const logoutUser = () => {
+    const guestUser: User = {
+      id: 'usr-guest-' + Math.floor(1000 + Math.random() * 9000),
+      name: 'Guest User',
+      email: 'guest@panthron.in',
+      role: 'customer',
+      addresses: [],
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    setUser(guestUser);
+    addToast('Logged out successfully.', 'info');
+  };
+
+  const userOrders = useMemo(() => {
+    if (user.role === 'admin') return orders;
+    return orders.filter(
+      (o) => o.userId === user.id || o.userEmail?.toLowerCase() === user.email?.toLowerCase()
+    );
+  }, [orders, user]);
+
+  const deleteOrder = async (orderId: string) => {
+    try {
+      const { error } = await insforge.database.from('orders').delete().eq('order_id', orderId);
+      if (error) throw new Error(error.message || JSON.stringify(error));
+      await refreshOrders();
+      addToast(`Order ${orderId} permanently deleted.`, 'info');
+    } catch (e: any) {
+      console.error('deleteOrder error:', e);
+      addToast('Failed to delete order: ' + (e.message || ''), 'error');
+    }
+  };
+
   const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
     const statusDescriptions: Record<OrderStatus, string> = {
       pending: 'Order confirmed and awaiting fulfillment',
@@ -790,6 +896,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+
   return (
     <ShopContext.Provider
       value={{
@@ -803,8 +910,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addCoupon, toggleCouponStatus, deleteCoupon, refreshCoupons,
         wishlist, toggleWishlist, isInWishlist,
         user, setUserRole, toggleUserRole, updateUserProfile, updateUserAddress, completeOnboarding, registeredUsers, isOnboardingModalOpen, setIsOnboardingModalOpen,
+        isAuthModalOpen, setIsAuthModalOpen, loginUser, registerUser, logoutUser,
 
-        orders, createOrder, updateOrderStatus, cancelOrder, refreshOrders,
+        orders: userOrders, createOrder, updateOrderStatus, cancelOrder, deleteOrder, refreshOrders,
+
 
         cartSubtotal, cartDiscount, cartShippingFee, cartTax, cartTotal,
         toasts, addToast, removeToast,

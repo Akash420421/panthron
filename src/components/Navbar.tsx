@@ -36,8 +36,10 @@ export const Navbar: React.FC = () => {
     orders,
     addToast,
     categories,
-    setFilters: _setFilters
+    setIsAuthModalOpen,
+    logoutUser,
   } = useShop();
+
 
   const [searchQuery, setSearchQuery] = useState(filters.searchQuery);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -389,7 +391,31 @@ export const Navbar: React.FC = () => {
                     <p className="text-[11px] text-zinc-600 font-semibold mt-0.5">📞 {user.phone}</p>
                   )}
                 </div>
+
+                <div className="flex flex-col gap-1.5 shrink-0">
+                  <button
+                    onClick={() => {
+                      setIsAuthModalOpen(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="bg-[#003882] text-white text-[11px] font-bold px-3 py-1.5 rounded-xl hover:bg-[#002866] transition-colors"
+                  >
+                    Sign In / Switch
+                  </button>
+                  {user.email !== 'guest@panthron.in' && (
+                    <button
+                      onClick={() => {
+                        logoutUser();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="text-[10px] text-rose-600 font-bold hover:underline text-center"
+                    >
+                      Log Out
+                    </button>
+                  )}
+                </div>
               </div>
+
 
 
               <div className="grid grid-cols-2 gap-2">

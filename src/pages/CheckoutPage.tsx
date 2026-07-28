@@ -51,7 +51,8 @@ export const CheckoutPage: React.FC = () => {
   });
 
   // Payment Form State
-  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'paypal' | 'apple_pay' | 'cash_on_delivery'>('credit_card');
+  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'paypal' | 'apple_pay' | 'cash_on_delivery'>('cash_on_delivery');
+
   const [cardNumber, setCardNumber] = useState('4242 4242 4242 4242');
   const [cardExpiry, setCardExpiry] = useState('12/28');
   const [cardCvc, setCardCvc] = useState('123');
@@ -330,28 +331,16 @@ export const CheckoutPage: React.FC = () => {
                 </div>
 
                 {/* Payment Options */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {[
-                    { id: 'credit_card', label: 'Credit Card' },
-                    { id: 'paypal', label: 'PayPal' },
-                    { id: 'apple_pay', label: 'Apple Pay' },
-                    { id: 'cash_on_delivery', label: 'Cash on Delivery' }
-                  ].map((method) => (
-                    <button
-                      key={method.id}
-                      type="button"
-                      disabled={isSubmitting}
-                      onClick={() => setPaymentMethod(method.id as any)}
-                      className={`p-3 rounded-xl text-xs font-bold border transition-all ${
-                        paymentMethod === method.id
-                          ? 'bg-blue-50 border-[#003882] text-[#003882]'
-                          : 'bg-zinc-50 border-zinc-200 text-zinc-700 hover:bg-zinc-100'
-                      }`}
-                    >
-                      {method.label}
-                    </button>
-                  ))}
+                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-2 text-xs">
+                  <div className="flex items-center gap-2 font-black text-emerald-800 text-sm">
+                    <span>💵 Cash on Delivery (COD)</span>
+                    <span className="px-2 py-0.5 bg-emerald-700 text-white font-extrabold text-[10px] rounded uppercase">Available</span>
+                  </div>
+                  <p className="text-emerald-700 font-medium">
+                    No upfront online payment required! Pay in cash directly to our courier executive when your order arrives at your address.
+                  </p>
                 </div>
+
 
                 {paymentMethod === 'credit_card' && (
                   <div className="space-y-4 text-xs">

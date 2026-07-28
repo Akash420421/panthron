@@ -174,57 +174,105 @@ export const AccountPage: React.FC = () => {
 
               const canCancel = order.status === 'pending' || order.status === 'processing';
 
+              const steps = ['pending', 'processing', 'shipped', 'delivered'];
+              const currentStepIndex = order.status === 'cancelled' ? -1 : Math.max(0, steps.indexOf(order.status));
+
               return (
                 <div
                   key={order.id}
-                  className="bg-white border border-zinc-200 rounded-2xl p-5 space-y-4 hover:border-zinc-400 transition-colors shadow-xs"
+                  className="bg-white border border-zinc-200 rounded-3xl p-5 space-y-4 shadow-sm hover:shadow-md transition-all"
                 >
+                  {/* Header Bar */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-100 pb-3 text-xs">
-                    <div>
-                      <span className="font-bold text-zinc-900 text-sm">Ref: {order.id}</span>
-                      <span className="text-zinc-500 ml-2">Placed on {new Date(order.createdAt).toLocaleDateString()}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-extrabold text-zinc-900 text-sm">Order #{order.id}</span>
+                      <span className="text-zinc-400">·</span>
+                      <span className="text-zinc-500">{new Date(order.createdAt).toLocaleDateString()}</span>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className="font-extrabold text-[#003882]">₹{(order.total ?? 0).toFixed(2)}</span>
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
+                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold rounded">
+                        💵 Cash on Delivery
+                      </span>
+                      <span className="font-black text-[#003882] text-sm">₹{(order.total ?? 0).toFixed(2)}</span>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border flex items-center gap-1 ${
                         order.status === 'delivered'
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                           : order.status === 'cancelled'
                             ? 'bg-rose-50 text-rose-700 border-rose-200'
                             : 'bg-blue-50 text-[#003882] border-blue-200'
                       }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          order.status === 'delivered' ? 'bg-emerald-600' : order.status === 'cancelled' ? 'bg-rose-600' : 'bg-[#003882] animate-pulse'
+                        }`} />
                         {order.status.replace(/_/g, ' ')}
                       </span>
                     </div>
                   </div>
 
-                  <p className="text-[11px] text-zinc-600 font-semibold">
-                    📦 {deliveryMsg}
-                  </p>
-
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 overflow-x-auto no-scrollbar">
-                      {order.items.map((item, idx) => (
+                  {/* Order Items */}
+                  <div className="space-y-3">
+                    {order.items.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-4 text-xs">
                         <img
-                          key={idx}
                           src={item.productImage}
                           alt={item.productName}
                           referrerPolicy="no-referrer"
-                          className="w-12 h-12 object-cover rounded-xl bg-zinc-100 border border-zinc-200 shrink-0"
+                          className="w-16 h-16 object-cover rounded-2xl bg-zinc-100 border border-zinc-200 shrink-0"
                         />
-                      ))}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-extrabold text-zinc-900 truncate text-sm">{item.productName}</p>
+                          <p className="text-zinc-500 mt-0.5">
+                            Qty: <strong className="text-zinc-700">{item.quantity}</strong> · Price: <strong className="text-zinc-900">₹{(item.price ?? 0).toFixed(2)}</strong>
+                          </p>
+                          {(item.color || item.size) && (
+                            <p className="text-[10px] text-zinc-400 mt-0.5">
+                              {item.color && <span>Color: {item.color} </span>}
+                              {item.size && <span>Size: {item.size}</span>}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Flipkart Stepper Timeline */}
+                  {order.status !== 'cancelled' ? (
+                    <div className="bg-zinc-50 border border-zinc-200/80 rounded-2xl p-3 text-[11px]">
+                      <div className="flex items-center justify-between text-zinc-600 font-bold mb-2">
+                        <span className={currentStepIndex >= 0 ? 'text-emerald-700' : ''}>1. Placed</span>
+                        <span className={currentStepIndex >= 1 ? 'text-emerald-700' : ''}>2. Packed</span>
+                        <span className={currentStepIndex >= 2 ? 'text-emerald-700' : ''}>3. Shipped</span>
+                        <span className={currentStepIndex >= 3 ? 'text-emerald-700' : ''}>4. Delivered</span>
+                      </div>
+                      <div className="w-full bg-zinc-200 h-2 rounded-full overflow-hidden flex">
+                        <div
+                          className="bg-emerald-600 h-full transition-all duration-500 rounded-full"
+                          style={{
+                            width: currentStepIndex === 0 ? '25%' : currentStepIndex === 1 ? '50%' : currentStepIndex === 2 ? '75%' : '100%'
+                          }}
+                        />
+                      </div>
                     </div>
+                  ) : (
+                    <div className="bg-rose-50 border border-rose-200 rounded-2xl p-3 text-xs text-rose-700 font-bold text-center">
+                      ❌ This order was cancelled.
+                    </div>
+                  )}
+
+                  {/* Footer Action Buttons */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-zinc-100">
+                    <p className="text-[11px] text-zinc-500 font-medium">📦 {deliveryMsg}</p>
 
                     <div className="flex items-center gap-2">
                       {canCancel && (
                         <button
                           onClick={() => {
-                            if (window.confirm(`Are you sure you want to cancel Order ${order.id}?`)) {
+                            if (window.confirm(`Are you sure you want to cancel Order #${order.id}?`)) {
                               cancelOrder(order.id);
                             }
                           }}
-                          className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-3 py-2 rounded-xl text-xs transition-colors"
+                          className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-3 py-1.5 rounded-xl text-xs transition-colors"
                         >
                           Cancel Order
                         </button>
@@ -234,36 +282,14 @@ export const AccountPage: React.FC = () => {
                         onClick={() => navigateTo('order-detail', { orderId: order.id })}
                         className="bg-[#003882] hover:bg-[#002866] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 shrink-0 shadow-xs"
                       >
-                        <span>View Details</span>
+                        <span>Track Order Details</span>
                         <ChevronRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
-
-                  {(companySettings.phone || companySettings.whatsapp) && (
-                    <div className="pt-3 border-t border-zinc-100 space-y-1.5">
-                      <p className="text-[10px] font-bold uppercase text-zinc-400">
-                        Need help with this order? Contact {companySettings.companyName}:
-                      </p>
-                      <div className="flex flex-wrap gap-3 text-[11px]">
-                        {companySettings.memberName && (
-                          <span className="text-zinc-700 font-medium">👤 {companySettings.memberName}</span>
-                        )}
-                        {companySettings.phone && (
-                          <a href={`tel:${companySettings.phone.replace(/\s/g, '')}`} className="text-[#003882] hover:underline font-bold">
-                            📞 {companySettings.phone}
-                          </a>
-                        )}
-                        {companySettings.whatsapp && (
-                          <a href={`https://wa.me/${companySettings.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline font-bold">
-                            💬 WhatsApp {companySettings.whatsapp}
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
               );
+
             })
           )}
         </div>
