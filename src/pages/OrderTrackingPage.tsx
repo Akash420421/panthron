@@ -8,15 +8,22 @@ import {
   MessageCircle,
   Mail,
   Building2,
-  User
+  User,
+  ArrowLeft,
+  PackageCheck,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Truck
 } from 'lucide-react';
 
 export const OrderTrackingPage: React.FC = () => {
-  const { orders, selectedOrderId, navigateTo, companySettings } = useShop();
-
+  const { orders, selectedOrderId, currentRoute, navigateTo, companySettings } = useShop();
   const [searchIdInput, setSearchIdInput] = useState('');
 
-  const order = orders.find((o) => o.id === selectedOrderId) || orders[0];
+  // If user selected a specific order or is in 'order-detail' route
+  const singleOrderMode = currentRoute === 'order-detail' || Boolean(selectedOrderId);
+  const selectedOrder = orders.find((o) => o.id === selectedOrderId) || (singleOrderMode ? orders[0] : null);
 
   const handleSearchOrder = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,204 +34,320 @@ export const OrderTrackingPage: React.FC = () => {
     }
   };
 
-  if (!order) {
+  // Helper for status badge styling
+  const renderStatusBadge = (status: string) => {
+    switch (status) {
+      case 'delivered':
+        return (
+          <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>Delivered</span>
+          </span>
+        );
+      case 'cancelled':
+        return (
+          <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1.5">
+            <XCircle className="w-3.5 h-3.5" />
+            <span>Cancelled</span>
+          </span>
+        );
+      case 'shipped':
+      case 'out_for_delivery':
+        return (
+          <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-blue-50 text-[#003882] border border-blue-200 flex items-center gap-1.5">
+            <Truck className="w-3.5 h-3.5" />
+            <span>{status.replace(/_/g, ' ')}</span>
+          </span>
+        );
+      default:
+        return (
+          <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5" />
+            <span>{status.replace(/_/g, ' ')}</span>
+          </span>
+        );
+    }
+  };
+
+  // VIEW 1: SINGLE ORDER DETAILS & TRACKING
+  if (singleOrderMode && selectedOrder) {
+    const order = selectedOrder;
+    const orderDate = order.createdAt ? new Date(order.createdAt) : new Date();
+    const estDate = order.estimatedDelivery ? new Date(order.estimatedDelivery) : new Date(orderDate);
+    estDate.setDate(estDate.getDate() + 4);
+    const now = new Date();
+    const diffTime = estDate.getTime() - now.getTime();
+    const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+    const deliveryMsg = order.status === 'delivered' 
+      ? 'Order delivered successfully. Thank you for shopping with us!'
+      : order.status === 'cancelled'
+        ? 'This order has been cancelled.'
+        : order.status === 'shipped' || order.status === 'out_for_delivery'
+          ? `Your order is on the way! Estimated arrival in ${Math.max(1, diffDays)} day${Math.max(1, diffDays) !== 1 ? 's' : ''}.`
+          : `We are preparing your package. Expected delivery in ${diffDays + 3} day${diffDays + 3 !== 1 ? 's' : ''}.`;
+
     return (
-      <div className="max-w-3xl mx-auto px-4 py-16 text-center space-y-4">
-        <h2 className="text-xl font-bold text-white">No Order Selected</h2>
-        <p className="text-xs text-zinc-400">Enter your Order Reference ID to check status.</p>
-        <form onSubmit={handleSearchOrder} className="flex gap-2 max-w-md mx-auto">
-          <input
-            type="text"
-            placeholder="e.g. SZ-98241"
-            value={searchIdInput}
-            onChange={(e) => setSearchIdInput(e.target.value)}
-            className="flex-1 bg-zinc-900 border border-zinc-800 text-xs text-white p-3 rounded-xl"
-          />
-          <button type="submit" className="bg-amber-500 text-zinc-950 font-bold px-4 py-3 rounded-xl text-xs">
-            Search
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <button
+            onClick={() => navigateTo('orders')}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-zinc-200 text-xs font-bold text-zinc-700 hover:bg-zinc-100 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 text-zinc-600" />
+            <span>Back to All Orders</span>
           </button>
-        </form>
+
+          <nav className="flex items-center gap-2 text-xs text-zinc-500">
+            <button onClick={() => navigateTo('home')} className="hover:text-zinc-900">Home</button>
+            <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
+            <button onClick={() => navigateTo('orders')} className="hover:text-zinc-900">Order History</button>
+            <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
+            <span className="text-zinc-900 font-bold">Order {order.id}</span>
+          </nav>
+        </div>
+
+        {/* Order Header Card */}
+        <div className="bg-white border border-zinc-200 rounded-3xl p-6 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl font-black text-zinc-900">Order {order.id}</h1>
+              {renderStatusBadge(order.status)}
+            </div>
+            <p className="text-xs text-zinc-500 mt-1 font-medium">
+              Placed on {new Date(order.createdAt).toLocaleDateString()} · Ref: <span className="font-mono text-zinc-700">{order.id}</span>
+            </p>
+          </div>
+
+          <div className="text-left sm:text-right text-xs space-y-1 bg-zinc-50 border border-zinc-200/80 p-3 rounded-2xl">
+            <p className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">Expected Delivery</p>
+            <p className="text-base font-black text-[#003882]">{estDate.toLocaleDateString()}</p>
+            <p className="text-[11px] text-zinc-600 font-medium">{deliveryMsg}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Order Items & Subtotal */}
+          <div className="lg:col-span-2 bg-white border border-zinc-200 rounded-3xl p-6 space-y-4 shadow-xs">
+            <h3 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">Items in Order</h3>
+            <div className="space-y-3 divide-y divide-zinc-100">
+              {order.items.map((item, idx) => (
+                <div key={idx} className="pt-3 first:pt-0 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={item.productImage}
+                      alt={item.productName}
+                      referrerPolicy="no-referrer"
+                      className="w-12 h-12 object-cover rounded-xl bg-zinc-100 border border-zinc-200 shrink-0"
+                    />
+                    <div>
+                      <p className="font-bold text-zinc-900">{item.productName}</p>
+                      <p className="text-zinc-500">Qty: {item.quantity} × ₹{(item.price ?? 0).toFixed(2)}</p>
+                    </div>
+                  </div>
+                  <span className="font-extrabold text-zinc-900">₹{((item.price ?? 0) * (item.quantity ?? 1)).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-zinc-200 pt-4 space-y-2 text-xs">
+              <div className="flex justify-between text-zinc-600"><span>Subtotal</span><span>₹{(order.subtotal ?? 0).toFixed(2)}</span></div>
+              <div className="flex justify-between text-zinc-600"><span>Discount</span><span>-₹{(order.discount ?? 0).toFixed(2)}</span></div>
+              <div className="flex justify-between text-zinc-600"><span>Shipping</span><span>₹{(order.shippingFee ?? 0).toFixed(2)}</span></div>
+              <div className="flex justify-between text-zinc-600"><span>Tax</span><span>₹{(order.tax ?? 0).toFixed(2)}</span></div>
+              <div className="flex justify-between pt-2 border-t border-zinc-200 font-black text-zinc-900 text-sm">
+                <span>Total Paid</span>
+                <span className="text-[#003882]">₹{(order.total ?? 0).toFixed(2)}</span>
+              </div>
+              {order.couponCode && (
+                <div className="flex justify-between text-emerald-700 text-[11px] font-bold">
+                  <span>Coupon Applied</span><span>{order.couponCode}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Delivery & Support */}
+          <div className="space-y-4">
+            <div className="bg-white border border-zinc-200 rounded-3xl p-6 space-y-4 text-xs shadow-xs">
+              <h3 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">Delivery Address</h3>
+              <div>
+                <p className="text-zinc-900 font-bold">{order.shippingAddress.fullName}</p>
+                <p className="text-zinc-600 mt-0.5">{order.shippingAddress.street}</p>
+                <p className="text-zinc-600">{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</p>
+                <p className="text-zinc-600">{order.shippingAddress.country}</p>
+                {order.shippingAddress.phone && (
+                  <p className="text-zinc-500 mt-1.5 font-medium">📞 {order.shippingAddress.phone}</p>
+                )}
+              </div>
+
+              <div className="pt-3 border-t border-zinc-100">
+                <p className="text-zinc-500 font-semibold mb-0.5">Payment Method</p>
+                <p className="text-zinc-900 font-bold capitalize">{order.paymentDetails.method.replace(/_/g, ' ')}</p>
+              </div>
+            </div>
+
+            {/* Need Help Box */}
+            <div className="bg-zinc-50 border border-zinc-200 rounded-3xl p-6 space-y-4 text-xs shadow-xs">
+              <h3 className="text-sm font-extrabold text-zinc-900 flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#003882]">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <span>Need Help? Contact {companySettings.companyName || 'PANTHRON'}</span>
+              </h3>
+
+              <div className="space-y-2.5">
+                {companySettings.memberName && (
+                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-zinc-200">
+                    <User className="w-4 h-4 text-[#003882] shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-zinc-400">Contact Person</p>
+                      <p className="text-zinc-900 font-bold">{companySettings.memberName}</p>
+                    </div>
+                  </div>
+                )}
+                {companySettings.phone && (
+                  <a href={`tel:${companySettings.phone.replace(/\s/g, '')}`} className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-zinc-200 hover:border-blue-300 transition-colors">
+                    <Phone className="w-4 h-4 text-blue-600 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-zinc-400">Call Us</p>
+                      <p className="text-zinc-900 font-bold">{companySettings.phone}</p>
+                    </div>
+                  </a>
+                )}
+                {companySettings.whatsapp && (
+                  <a href={`https://wa.me/${companySettings.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-zinc-200 hover:border-emerald-300 transition-colors">
+                    <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-zinc-400">WhatsApp</p>
+                      <p className="text-emerald-700 font-bold">{companySettings.whatsapp}</p>
+                    </div>
+                  </a>
+                )}
+                {companySettings.email && (
+                  <a href={`mailto:${companySettings.email}`} className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-zinc-200 hover:border-blue-300 transition-colors">
+                    <Mail className="w-4 h-4 text-blue-600 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-zinc-400">Email Support</p>
+                      <p className="text-blue-700 font-bold truncate">{companySettings.email}</p>
+                    </div>
+                  </a>
+                )}
+                {companySettings.address && (
+                  <div className="flex items-start gap-3 p-2.5 rounded-xl bg-white border border-zinc-200 mt-2">
+                    <MapPin className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-zinc-400">Store Address</p>
+                      <p className="text-zinc-700 font-medium text-xs leading-relaxed">{companySettings.address}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  const orderDate = order.createdAt ? new Date(order.createdAt) : new Date();
-  const estDate = order.estimatedDelivery ? new Date(order.estimatedDelivery) : new Date(orderDate);
-  estDate.setDate(estDate.getDate() + 4);
-  const now = new Date();
-  const diffTime = estDate.getTime() - now.getTime();
-  const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-
-  const deliveryMsg = order.status === 'delivered' 
-    ? '✅ Order delivered successfully. Thank you for shopping!'
-    : order.status === 'cancelled'
-      ? '❌ This order has been cancelled.'
-      : order.status === 'shipped' || order.status === 'out_for_delivery'
-        ? `📦 Your order is on the way! Estimated arrival: ${Math.max(1, diffDays)} day${Math.max(1, diffDays) !== 1 ? 's' : ''} from now.`
-        : `⏳ We're preparing your order. Expected delivery in ${diffDays + 3} day${diffDays + 3 !== 1 ? 's' : ''}.`;
-
+  // VIEW 2: ALL ORDERS HISTORY LIST (When route is 'orders' or no specific order selected)
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <nav className="flex items-center gap-2 text-xs text-zinc-400">
-        <button onClick={() => navigateTo('home')} className="hover:text-white">Home</button>
-        <ChevronRight className="w-3.5 h-3.5 text-zinc-600" />
-        <button onClick={() => navigateTo('orders')} className="hover:text-white">Order History</button>
-        <ChevronRight className="w-3.5 h-3.5 text-zinc-600" />
-        <span className="text-amber-400 font-medium">Order {order.id}</span>
-      </nav>
-
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-4">
         <div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-2xl font-black text-white">Order {order.id}</h1>
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
-              order.status === 'delivered'
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                : order.status === 'cancelled'
-                  ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-                  : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-            }`}>
-              {order.status.replace(/_/g, ' ')}
-            </span>
-          </div>
-          <p className="text-xs text-zinc-400 mt-1">
-            Placed on {new Date(order.createdAt).toLocaleDateString()}
+          <h1 className="text-2xl font-black text-zinc-900 tracking-tight flex items-center gap-2">
+            <PackageCheck className="w-6 h-6 text-[#003882]" />
+            <span>Order History</span>
+          </h1>
+          <p className="text-xs text-zinc-500 mt-1">
+            Track, view and manage all {orders.length} order{orders.length !== 1 ? 's' : ''} placed on your account.
           </p>
         </div>
 
-        <div className="text-left sm:text-right text-xs space-y-1">
-          <p className="text-zinc-400 font-semibold uppercase tracking-wider">Expected Delivery</p>
-          <p className="text-base font-black text-amber-400">{estDate.toLocaleDateString()}</p>
-          <p className="text-[11px] text-zinc-500">{deliveryMsg}</p>
-        </div>
+        <form onSubmit={handleSearchOrder} className="flex gap-2 max-w-xs w-full">
+          <input
+            type="text"
+            placeholder="Search Order ID..."
+            value={searchIdInput}
+            onChange={(e) => setSearchIdInput(e.target.value)}
+            className="flex-1 bg-white border border-zinc-300 text-xs text-zinc-900 p-2.5 rounded-xl focus:outline-none focus:border-[#003882]"
+          />
+          <button type="submit" className="bg-[#003882] text-white font-bold px-3.5 py-2.5 rounded-xl text-xs hover:bg-[#002866]">
+            Search
+          </button>
+        </form>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-4">
-          <h3 className="text-base font-bold text-white border-b border-zinc-800 pb-3">Items in Order</h3>
-          <div className="space-y-3 divide-y divide-zinc-800/60">
-            {order.items.map((item, idx) => (
-              <div key={idx} className="pt-3 first:pt-0 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-3">
-                  <img
-                    src={item.productImage}
-                    alt={item.productName}
-                    referrerPolicy="no-referrer"
-                    className="w-12 h-12 object-cover rounded-xl bg-zinc-800 shrink-0"
-                  />
-                  <div>
-                    <p className="font-bold text-white">{item.productName}</p>
-                    <p className="text-zinc-400">Qty: {item.quantity} × ${item.price.toFixed(2)}</p>
-                  </div>
-                </div>
-                <span className="font-bold text-amber-400">${(item.price * item.quantity).toFixed(2)}</span>
-              </div>
-            ))}
+      {orders.length === 0 ? (
+        <div className="bg-white border border-zinc-200 rounded-3xl p-12 text-center space-y-4 shadow-xs max-w-lg mx-auto">
+          <div className="w-16 h-16 rounded-2xl bg-blue-50 text-[#003882] border border-blue-100 flex items-center justify-center mx-auto">
+            <PackageCheck className="w-8 h-8" />
           </div>
-          <div className="border-t border-zinc-800 pt-4 space-y-1.5 text-xs">
-            <div className="flex justify-between text-zinc-400"><span>Subtotal</span><span>${order.subtotal.toFixed(2)}</span></div>
-            <div className="flex justify-between text-zinc-400"><span>Discount</span><span>-${order.discount.toFixed(2)}</span></div>
-            <div className="flex justify-between text-zinc-400"><span>Shipping</span><span>${order.shippingFee.toFixed(2)}</span></div>
-            <div className="flex justify-between text-zinc-400"><span>Tax</span><span>${order.tax.toFixed(2)}</span></div>
-            <div className="flex justify-between pt-2 border-t border-zinc-800 font-black text-white text-sm">
-              <span>Total Paid</span><span>${order.total.toFixed(2)}</span>
-            </div>
-            {order.couponCode && (
-              <div className="flex justify-between text-emerald-400 text-[11px] font-bold">
-                <span>Coupon Applied</span><span>{order.couponCode}</span>
-              </div>
-            )}
+          <div>
+            <h3 className="text-base font-bold text-zinc-900">No Orders Found</h3>
+            <p className="text-xs text-zinc-500 mt-1">You haven't placed any orders yet.</p>
           </div>
+          <button
+            onClick={() => navigateTo('products')}
+            className="bg-[#003882] hover:bg-[#002866] text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md transition-colors"
+          >
+            Browse Products
+          </button>
         </div>
-
+      ) : (
         <div className="space-y-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-4 text-xs">
-            <h3 className="text-base font-bold text-white border-b border-zinc-800 pb-3">Delivery Snapshot</h3>
-            <div>
-              <p className="text-zinc-400 font-semibold mb-1">Recipient Address:</p>
-              <p className="text-white font-medium">{order.shippingAddress.fullName}</p>
-              <p className="text-zinc-300">{order.shippingAddress.street}</p>
-              <p className="text-zinc-300">{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</p>
-              <p className="text-zinc-300">{order.shippingAddress.country}</p>
-              {order.shippingAddress.phone && (
-                <p className="text-zinc-400 mt-1">📞 {order.shippingAddress.phone}</p>
-              )}
-            </div>
+          {orders.map((ord) => {
+            const orderDateStr = ord.createdAt ? new Date(ord.createdAt).toLocaleDateString() : 'Recent';
+            return (
+              <div
+                key={ord.id}
+                className="bg-white border border-zinc-200 rounded-2xl p-5 space-y-4 hover:border-zinc-400 transition-all shadow-xs"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-100 pb-3 text-xs">
+                  <div>
+                    <span className="font-black text-zinc-900 text-sm">Ref: {ord.id}</span>
+                    <span className="text-zinc-500 ml-3">Placed on {orderDateStr}</span>
+                  </div>
 
-            <div className="pt-2 border-t border-zinc-800">
-              <p className="text-zinc-400 font-semibold mb-1">Payment Method:</p>
-              <p className="text-white font-medium capitalize">{order.paymentDetails.method.replace(/_/g, ' ')}</p>
-            </div>
-          </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-black text-[#003882] text-base">₹{(ord.total ?? 0).toFixed(2)}</span>
+                    {renderStatusBadge(ord.status)}
+                  </div>
+                </div>
 
-          <div className="bg-gradient-to-br from-zinc-900 via-[#14120d] to-[#1a1305] border border-amber-500/30 rounded-3xl p-6 space-y-4 text-xs shadow-xl shadow-black/20 relative overflow-hidden">
-            <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_top_right,_rgba(245,158,11,0.4),_transparent_60%)]" />
-            <h3 className="text-base font-black text-white flex items-center gap-2 relative">
-              <div className="w-9 h-9 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
-                <Building2 className="w-4 h-4 text-amber-400" />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  {/* Order items thumbnails */}
+                  <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
+                    {ord.items.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 p-1.5 rounded-xl shrink-0">
+                        <img
+                          src={item.productImage}
+                          alt={item.productName}
+                          referrerPolicy="no-referrer"
+                          className="w-10 h-10 object-cover rounded-lg bg-white shrink-0"
+                        />
+                        <div className="pr-1 text-[11px]">
+                          <p className="font-bold text-zinc-800 max-w-[130px] truncate">{item.productName}</p>
+                          <p className="text-zinc-500 text-[10px]">Qty: {item.quantity}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => navigateTo('order-detail', { orderId: ord.id })}
+                    className="bg-[#003882] hover:bg-[#002866] text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shrink-0 shadow-xs"
+                  >
+                    <span>View Tracking &amp; Details</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-              Need Help? Contact <span className="text-amber-400">{companySettings.companyName || 'PANTHRON Official'}</span>
-            </h3>
-            <div className="space-y-3 relative">
-              {companySettings.memberName && (
-                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700/60">
-                  <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
-                    <User className="w-4 h-4 text-amber-400" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase text-amber-400/80 tracking-widest">Contact Person</p>
-                    <p className="text-zinc-100 font-bold text-sm">{companySettings.memberName}</p>
-                  </div>
-                </div>
-              )}
-              {companySettings.phone && (
-                <a href={`tel:${companySettings.phone.replace(/\s/g, '')}`} className="flex items-center gap-3 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700/60 hover:bg-zinc-800 hover:border-amber-500/40 transition-colors">
-                  <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
-                    <Phone className="w-4 h-4 text-amber-400" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Call</p>
-                    <p className="text-amber-400 font-bold text-sm">{companySettings.phone}</p>
-                  </div>
-                </a>
-              )}
-              {companySettings.whatsapp && (
-                <a href={`https://wa.me/${companySettings.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700/60 hover:bg-zinc-800 hover:border-emerald-500/50 transition-colors">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center shrink-0">
-                    <MessageCircle className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">WhatsApp</p>
-                    <p className="text-emerald-400 font-bold text-sm">{companySettings.whatsapp}</p>
-                  </div>
-                </a>
-              )}
-              {companySettings.email && (
-                <a href={`mailto:${companySettings.email}`} className="flex items-center gap-3 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700/60 hover:bg-zinc-800 hover:border-sky-500/50 transition-colors">
-                  <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/40 flex items-center justify-center shrink-0">
-                    <Mail className="w-4 h-4 text-sky-400" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Email</p>
-                    <p className="text-sky-400 font-bold text-sm">{companySettings.email}</p>
-                  </div>
-                </a>
-              )}
-              {companySettings.address && (
-                <div className="flex items-start gap-3 p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700/60 pt-3 mt-2 border-t-2 border-amber-500/30">
-                  <div className="w-9 h-9 rounded-xl bg-rose-500/15 border border-rose-500/40 flex items-center justify-center shrink-0 mt-0.5">
-                    <MapPin className="w-4 h-4 text-rose-400" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Store Address</p>
-                    <p className="text-zinc-200 font-semibold text-sm leading-relaxed">{companySettings.address}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+            );
+          })}
         </div>
-      </div>
+      )}
     </div>
   );
 };
+

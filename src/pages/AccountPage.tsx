@@ -40,18 +40,18 @@ export const AccountPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="bg-white border border-zinc-200 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
         <div className="flex items-center gap-4">
           <div className="relative group">
             <img
               src={user.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80'}
               alt={user.name}
               referrerPolicy="no-referrer"
-              className="w-16 h-16 rounded-full object-cover ring-2 ring-amber-500"
+              className="w-16 h-16 rounded-full object-cover ring-2 ring-[#003882]"
             />
             <button
               onClick={() => setActiveTab('profile')}
-              className="absolute -bottom-1 -right-1 w-7 h-7 bg-amber-500 text-zinc-950 rounded-full flex items-center justify-center shadow-lg hover:bg-amber-400 transition-colors"
+              className="absolute -bottom-1 -right-1 w-7 h-7 bg-[#003882] text-white rounded-full flex items-center justify-center shadow-md hover:bg-[#002866] transition-colors"
               title="Change photo"
             >
               <Camera className="w-3.5 h-3.5" />
@@ -59,21 +59,21 @@ export const AccountPage: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-white">{user.name}</h1>
-              <span className="px-2 py-0.5 bg-amber-500/15 text-amber-400 font-bold text-[10px] rounded uppercase">
+              <h1 className="text-xl font-bold text-zinc-900">{user.name}</h1>
+              <span className="px-2 py-0.5 bg-blue-50 text-[#003882] border border-blue-200 font-extrabold text-[10px] rounded uppercase">
                 {user.role}
               </span>
             </div>
-            <p className="text-xs text-zinc-400 mt-0.5">{user.email} · Customer since {user.createdAt}</p>
+            <p className="text-xs text-zinc-500 mt-0.5">{user.email} · Customer since {user.createdAt}</p>
           </div>
         </div>
       </div>
 
-      <div className="flex border-b border-zinc-800 text-xs font-bold">
+      <div className="flex border-b border-zinc-200 text-xs font-bold">
         <button
           onClick={() => setActiveTab('profile')}
           className={`px-6 py-3 border-b-2 flex items-center gap-2 transition-colors ${
-            activeTab === 'profile' ? 'border-amber-500 text-amber-400' : 'border-transparent text-zinc-400 hover:text-white'
+            activeTab === 'profile' ? 'border-[#003882] text-[#003882]' : 'border-transparent text-zinc-500 hover:text-zinc-900'
           }`}
         >
           <UserIcon className="w-4 h-4" />
@@ -83,7 +83,7 @@ export const AccountPage: React.FC = () => {
         <button
           onClick={() => setActiveTab('orders')}
           className={`px-6 py-3 border-b-2 flex items-center gap-2 transition-colors ${
-            activeTab === 'orders' ? 'border-amber-500 text-amber-400' : 'border-transparent text-zinc-400 hover:text-white'
+            activeTab === 'orders' ? 'border-[#003882] text-[#003882]' : 'border-transparent text-zinc-500 hover:text-zinc-900'
           }`}
         >
           <PackageCheck className="w-4 h-4" />
@@ -93,7 +93,7 @@ export const AccountPage: React.FC = () => {
         <button
           onClick={() => setActiveTab('addresses')}
           className={`px-6 py-3 border-b-2 flex items-center gap-2 transition-colors ${
-            activeTab === 'addresses' ? 'border-amber-500 text-amber-400' : 'border-transparent text-zinc-400 hover:text-white'
+            activeTab === 'addresses' ? 'border-[#003882] text-[#003882]' : 'border-transparent text-zinc-500 hover:text-zinc-900'
           }`}
         >
           <MapPin className="w-4 h-4" />
@@ -104,12 +104,12 @@ export const AccountPage: React.FC = () => {
       {activeTab === 'orders' && (
         <div className="space-y-4">
           {orders.length === 0 ? (
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-12 text-center space-y-3">
-              <PackageCheck className="w-10 h-10 text-zinc-600 mx-auto" />
-              <p className="text-xs text-zinc-400">You haven't placed any orders yet.</p>
+            <div className="bg-white border border-zinc-200 rounded-2xl p-12 text-center space-y-3 shadow-xs">
+              <PackageCheck className="w-10 h-10 text-zinc-400 mx-auto" />
+              <p className="text-xs text-zinc-500">You haven't placed any orders yet.</p>
               <button
                 onClick={() => navigateTo('products')}
-                className="bg-amber-500 text-zinc-950 font-bold px-4 py-2 rounded-xl text-xs"
+                className="bg-[#003882] text-white font-bold px-4 py-2 rounded-xl text-xs hover:bg-[#002866]"
               >
                 Browse Shop
               </button>
@@ -133,29 +133,29 @@ export const AccountPage: React.FC = () => {
               return (
                 <div
                   key={order.id}
-                  className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-5 space-y-4 hover:border-zinc-700 transition-colors"
+                  className="bg-white border border-zinc-200 rounded-2xl p-5 space-y-4 hover:border-zinc-400 transition-colors shadow-xs"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-3 text-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-100 pb-3 text-xs">
                     <div>
-                      <span className="font-bold text-white text-sm">Ref: {order.id}</span>
-                      <span className="text-zinc-400 ml-2">Placed on {new Date(order.createdAt).toLocaleDateString()}</span>
+                      <span className="font-bold text-zinc-900 text-sm">Ref: {order.id}</span>
+                      <span className="text-zinc-500 ml-2">Placed on {new Date(order.createdAt).toLocaleDateString()}</span>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className="font-extrabold text-amber-400">${(order.total ?? 0).toFixed(2)}</span>
+                      <span className="font-extrabold text-[#003882]">₹{(order.total ?? 0).toFixed(2)}</span>
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
                         order.status === 'delivered'
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                           : order.status === 'cancelled'
-                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-                            : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                            ? 'bg-rose-50 text-rose-700 border-rose-200'
+                            : 'bg-blue-50 text-[#003882] border-blue-200'
                       }`}>
                         {order.status.replace(/_/g, ' ')}
                       </span>
                     </div>
                   </div>
 
-                  <p className="text-[11px] text-zinc-400 font-semibold">
+                  <p className="text-[11px] text-zinc-600 font-semibold">
                     📦 {deliveryMsg}
                   </p>
 
@@ -167,14 +167,14 @@ export const AccountPage: React.FC = () => {
                           src={item.productImage}
                           alt={item.productName}
                           referrerPolicy="no-referrer"
-                          className="w-12 h-12 object-cover rounded-xl bg-zinc-800 shrink-0"
+                          className="w-12 h-12 object-cover rounded-xl bg-zinc-100 border border-zinc-200 shrink-0"
                         />
                       ))}
                     </div>
 
                     <button
                       onClick={() => navigateTo('order-detail', { orderId: order.id })}
-                      className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 shrink-0"
+                      className="bg-[#003882] hover:bg-[#002866] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 shrink-0 shadow-xs"
                     >
                       <span>View Details</span>
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -182,21 +182,21 @@ export const AccountPage: React.FC = () => {
                   </div>
 
                   {(companySettings.phone || companySettings.whatsapp) && (
-                    <div className="pt-3 border-t border-zinc-800 space-y-1.5">
-                      <p className="text-[10px] font-bold uppercase text-zinc-500">
+                    <div className="pt-3 border-t border-zinc-100 space-y-1.5">
+                      <p className="text-[10px] font-bold uppercase text-zinc-400">
                         Need help with this order? Contact {companySettings.companyName}:
                       </p>
                       <div className="flex flex-wrap gap-3 text-[11px]">
                         {companySettings.memberName && (
-                          <span className="text-zinc-300">👤 {companySettings.memberName}</span>
+                          <span className="text-zinc-700 font-medium">👤 {companySettings.memberName}</span>
                         )}
                         {companySettings.phone && (
-                          <a href={`tel:${companySettings.phone.replace(/\s/g, '')}`} className="text-amber-400 hover:underline font-semibold">
+                          <a href={`tel:${companySettings.phone.replace(/\s/g, '')}`} className="text-[#003882] hover:underline font-bold">
                             📞 {companySettings.phone}
                           </a>
                         )}
                         {companySettings.whatsapp && (
-                          <a href={`https://wa.me/${companySettings.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline font-semibold">
+                          <a href={`https://wa.me/${companySettings.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline font-bold">
                             💬 WhatsApp {companySettings.whatsapp}
                           </a>
                         )}
@@ -211,8 +211,8 @@ export const AccountPage: React.FC = () => {
       )}
 
       {activeTab === 'profile' && (
-        <form onSubmit={handleProfileSave} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-2xl space-y-5 text-xs">
-          <h2 className="font-bold text-white text-sm border-b border-zinc-800 pb-3">Edit Personal Details</h2>
+        <form onSubmit={handleProfileSave} className="bg-white border border-zinc-200 rounded-2xl p-6 max-w-2xl space-y-5 text-xs shadow-xs">
+          <h2 className="font-bold text-zinc-900 text-sm border-b border-zinc-100 pb-3">Edit Personal Details</h2>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pb-2">
             <div className="relative shrink-0">
@@ -220,15 +220,15 @@ export const AccountPage: React.FC = () => {
                 src={avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80'}
                 alt="Profile preview"
                 referrerPolicy="no-referrer"
-                className="w-20 h-20 rounded-full object-cover ring-2 ring-zinc-700"
+                className="w-20 h-20 rounded-full object-cover ring-2 ring-zinc-300"
               />
-              <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-zinc-700 text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-zinc-600"
+              <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-[#003882] text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-[#002866]"
                 onClick={() => setShowAvatarInput(!showAvatarInput)}>
                 <Camera className="w-3.5 h-3.5" />
               </div>
             </div>
             <div className="flex-1 w-full space-y-2">
-              <label className="block text-zinc-300 font-semibold">Profile Photo URL</label>
+              <label className="block text-zinc-700 font-bold">Profile Photo URL</label>
               {showAvatarInput && (
                 <div className="flex gap-2">
                   <input
@@ -236,7 +236,7 @@ export const AccountPage: React.FC = () => {
                     placeholder="Paste avatar image URL..."
                     value={avatarInput}
                     onChange={(e) => setAvatarInput(e.target.value)}
-                    className="flex-1 bg-zinc-800 text-zinc-100 p-2 rounded-xl border border-zinc-700"
+                    className="flex-1 bg-zinc-50 text-zinc-900 p-2 rounded-xl border border-zinc-300"
                   />
                   <button
                     type="button"
@@ -246,7 +246,7 @@ export const AccountPage: React.FC = () => {
                         setAvatarInput('');
                       }
                     }}
-                    className="bg-amber-500 text-zinc-950 px-3 rounded-xl font-bold hover:bg-amber-400"
+                    className="bg-[#003882] text-white px-3 rounded-xl font-bold hover:bg-[#002866]"
                   >
                     <Check className="w-4 h-4" />
                   </button>
@@ -260,41 +260,41 @@ export const AccountPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-zinc-300 font-semibold mb-1">Full Name</label>
+              <label className="block text-zinc-700 font-bold mb-1">Full Name</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-zinc-800 text-zinc-100 p-2.5 rounded-xl border border-zinc-700"
+                className="w-full bg-zinc-50 text-zinc-900 p-2.5 rounded-xl border border-zinc-300"
               />
             </div>
 
             <div>
-              <label className="block text-zinc-300 font-semibold mb-1">Email Address</label>
+              <label className="block text-zinc-700 font-bold mb-1">Email Address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-zinc-800 text-zinc-100 p-2.5 rounded-xl border border-zinc-700"
+                className="w-full bg-zinc-50 text-zinc-900 p-2.5 rounded-xl border border-zinc-300"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-zinc-300 font-semibold mb-1">Phone Number</label>
+            <label className="block text-zinc-700 font-bold mb-1">Phone Number</label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+91 98765 43210"
-              className="w-full bg-zinc-800 text-zinc-100 p-2.5 rounded-xl border border-zinc-700"
+              className="w-full bg-zinc-50 text-zinc-900 p-2.5 rounded-xl border border-zinc-300"
             />
           </div>
 
           <div className="flex items-center gap-3 pt-2">
             <button
               type="submit"
-              className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold px-6 py-2.5 rounded-xl text-xs flex items-center gap-1.5"
+              className="bg-[#003882] hover:bg-[#002866] text-white font-bold px-6 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shadow-sm"
             >
               <Check className="w-4 h-4" /> Save Changes
             </button>
@@ -305,23 +305,23 @@ export const AccountPage: React.FC = () => {
       {activeTab === 'addresses' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {user.addresses.length === 0 ? (
-            <div className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-8 text-center space-y-2">
-              <MapPin className="w-8 h-8 text-zinc-600 mx-auto" />
-              <p className="text-xs text-zinc-400">No saved addresses yet.</p>
+            <div className="md:col-span-2 bg-white border border-zinc-200 rounded-2xl p-8 text-center space-y-2 shadow-xs">
+              <MapPin className="w-8 h-8 text-zinc-400 mx-auto" />
+              <p className="text-xs text-zinc-500">No saved addresses yet.</p>
             </div>
           ) : user.addresses.map((addr, idx) => (
-            <div key={idx} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-2 text-xs">
+            <div key={idx} className="bg-white border border-zinc-200 rounded-2xl p-5 space-y-2 text-xs shadow-xs">
               <div className="flex justify-between items-center">
-                <span className="font-bold text-white">{addr.fullName}</span>
+                <span className="font-bold text-zinc-900">{addr.fullName}</span>
                 {addr.isDefault && (
-                  <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 text-[10px] font-bold rounded">
+                  <span className="px-2 py-0.5 bg-blue-50 text-[#003882] border border-blue-200 text-[10px] font-bold rounded">
                     Default Address
                   </span>
                 )}
               </div>
-              <p className="text-zinc-300">{addr.street}</p>
-              <p className="text-zinc-300">{addr.city}, {addr.state} {addr.zipCode}</p>
-              <p className="text-zinc-400">{addr.country}</p>
+              <p className="text-zinc-700">{addr.street}</p>
+              <p className="text-zinc-700">{addr.city}, {addr.state} {addr.zipCode}</p>
+              <p className="text-zinc-500">{addr.country}</p>
             </div>
           ))}
         </div>

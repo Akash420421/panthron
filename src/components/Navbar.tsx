@@ -368,31 +368,31 @@ export const Navbar: React.FC = () => {
             exit={{ opacity: 0, y: -6, height: 0 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
             style={{ willChange: 'transform,opacity,height' }}
-            className="bg-zinc-900 border-b border-zinc-800 px-4 py-5 space-y-6 text-white overflow-hidden"
+            className="bg-white border-b border-zinc-200 px-4 py-5 space-y-5 text-zinc-900 shadow-xl overflow-hidden"
           >
             {/* Profile Section */}
-            <div className="bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-800 rounded-2xl p-4 space-y-4">
+            <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 space-y-4">
               <div className="flex items-center gap-4">
                 <img
                   src={user.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80'}
                   alt={user.name}
                   referrerPolicy="no-referrer"
-                  className="w-14 h-14 rounded-2xl object-cover ring-2 ring-amber-400 shadow-lg"
+                  className="w-13 h-13 rounded-2xl object-cover ring-2 ring-[#003882]/30 shadow-sm"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-black text-white truncate text-lg">{user.name}</p>
-                    <span className={`px-2 py-0.5 rounded-md uppercase font-black text-[10px] border ${
+                    <p className="font-extrabold text-zinc-900 truncate text-base">{user.name}</p>
+                    <span className={`px-2 py-0.5 rounded uppercase font-black text-[10px] border ${
                       user.role === 'admin'
-                        ? 'bg-amber-500/20 text-amber-400 border-amber-500/40'
-                        : 'bg-[#003882]/20 text-[#67b0ff] border-[#003882]/50'
+                        ? 'bg-[#003882] text-white border-[#003882]'
+                        : 'bg-zinc-200 text-zinc-700 border-zinc-300'
                     }`}>
                       {user.role}
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-400 truncate mt-0.5">{user.email}</p>
+                  <p className="text-xs text-zinc-500 truncate mt-0.5">{user.email}</p>
                   {user.phone && (
-                    <p className="text-[11px] text-zinc-500 mt-0.5">📞 {user.phone}</p>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">📞 {user.phone}</p>
                   )}
                 </div>
               </div>
@@ -403,51 +403,54 @@ export const Navbar: React.FC = () => {
                     navigateTo('account');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex items-center gap-2 p-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-left transition-colors"
+                  className="flex items-center gap-2 p-3 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-left transition-colors shadow-xs"
                 >
-                  <User className="w-4 h-4 text-[#67b0ff]" />
+                  <User className="w-4 h-4 text-[#003882]" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-white">My Profile</p>
-                    <p className="text-[10px] text-zinc-400">Account & Settings</p>
+                    <p className="text-xs font-bold text-zinc-900">My Profile</p>
+                    <p className="text-[10px] text-zinc-500">Account Settings</p>
                   </div>
                 </button>
+
                 <button
                   onClick={() => {
                     navigateTo('orders');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex items-center gap-2 p-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-left transition-colors"
+                  className="flex items-center gap-2 p-3 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-left transition-colors shadow-xs"
                 >
-                  <PackageCheck className="w-4 h-4 text-amber-400" />
+                  <PackageCheck className="w-4 h-4 text-emerald-600" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-white">My Orders</p>
-                    <p className="text-[10px] text-zinc-400">{orders.length} placed</p>
+                    <p className="text-xs font-bold text-zinc-900">My Orders</p>
+                    <p className="text-[10px] text-zinc-500">{orders.length} placed</p>
                   </div>
                 </button>
+
                 <button
                   onClick={() => {
                     navigateTo('wishlist');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex items-center gap-2 p-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-left transition-colors"
+                  className="flex items-center gap-2 p-3 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-left transition-colors shadow-xs"
                 >
-                  <Heart className="w-4 h-4 text-rose-400" />
+                  <Heart className="w-4 h-4 text-rose-500" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-white">Wishlist</p>
-                    <p className="text-[10px] text-zinc-400">{wishlist.length} saved</p>
+                    <p className="text-xs font-bold text-zinc-900">Wishlist</p>
+                    <p className="text-[10px] text-zinc-500">{wishlist.length} saved</p>
                   </div>
                 </button>
+
                 <button
                   onClick={() => {
                     setIsCartDrawerOpen(true);
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex items-center gap-2 p-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-left transition-colors"
+                  className="flex items-center gap-2 p-3 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-left transition-colors shadow-xs"
                 >
-                  <ShoppingCart className="w-4 h-4 text-emerald-400" />
+                  <ShoppingCart className="w-4 h-4 text-blue-600" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-white">Cart</p>
-                    <p className="text-[10px] text-zinc-400">{totalCartItems} items</p>
+                    <p className="text-xs font-bold text-zinc-900">Cart</p>
+                    <p className="text-[10px] text-zinc-500">{totalCartItems} items</p>
                   </div>
                 </button>
               </div>
@@ -458,16 +461,16 @@ export const Navbar: React.FC = () => {
                     navigateTo('admin');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="w-full flex items-center justify-between gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-500/10 border border-amber-500/40 hover:from-amber-500/30 hover:to-amber-500/20 transition-colors"
+                  className="w-full flex items-center justify-between gap-3 p-3 rounded-xl bg-blue-50/80 border border-blue-200 hover:bg-blue-100/80 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <ShieldCheck className="w-5 h-5 text-amber-400" />
+                    <ShieldCheck className="w-5 h-5 text-[#003882]" />
                     <div className="text-left">
-                      <p className="text-sm font-black text-amber-400">Admin Dashboard</p>
-                      <p className="text-[10px] text-zinc-400">Manage store, orders &amp; products</p>
+                      <p className="text-sm font-black text-[#003882]">Admin Dashboard</p>
+                      <p className="text-[10px] text-zinc-500">Manage store, orders &amp; products</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-amber-400" />
+                  <ChevronRight className="w-4 h-4 text-[#003882]" />
                 </button>
               )}
 
@@ -477,54 +480,20 @@ export const Navbar: React.FC = () => {
                     navigateTo('home');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="w-full flex items-center gap-2 p-3 rounded-xl bg-zinc-800/60 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors"
+                  className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl bg-zinc-200/70 hover:bg-zinc-200 text-zinc-800 transition-colors text-xs font-bold"
                 >
-                  <Home className="w-4 h-4 text-zinc-400" />
-                  <span className="text-xs font-bold">Back to Home</span>
+                  <Home className="w-4 h-4 text-zinc-600" />
+                  <span>Back to Home</span>
                 </button>
               )}
             </div>
 
-            <form onSubmit={handleSearchSubmit} className="relative">
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-zinc-800 text-sm text-zinc-100 placeholder-zinc-400 pl-10 pr-4 py-2.5 rounded-xl border border-zinc-700 focus:outline-none focus:border-amber-400"
-              />
-              <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            </form>
-
-            <div>
-              <p className="text-xs font-semibold uppercase text-zinc-400 mb-2 tracking-widest">Shop by Category</p>
-              <div className="grid grid-cols-2 gap-2">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => {
-                      setFilters((prev) => ({ ...prev, category: cat }));
-                      navigateTo('products');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`text-left px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                      filters.category === cat
-                        ? 'bg-amber-500 text-zinc-950 font-black shadow-md'
-                        : 'bg-zinc-800/60 text-zinc-300 hover:bg-zinc-800 hover:text-white'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-between pt-1">
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="text-[11px] text-zinc-500 hover:text-white flex items-center gap-1"
+                className="text-xs text-zinc-500 hover:text-zinc-900 flex items-center gap-1 font-medium"
               >
-                <X className="w-3.5 h-3.5" /> Close menu
+                <X className="w-4 h-4" /> Close menu
               </button>
             </div>
 

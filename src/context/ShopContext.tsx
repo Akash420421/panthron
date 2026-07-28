@@ -582,7 +582,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateUserProfile = (data: Partial<User>) => { setUser((prev) => ({ ...prev, ...data })); addToast('Profile updated!', 'success'); };
 
+  const isOrderProcessingRef = React.useRef(false);
+
   const createOrder = async (shippingAddress: ShippingAddress, paymentDetails: PaymentDetails): Promise<Order> => {
+    if (isOrderProcessingRef.current) {
+      throw new Error('An order is already being processed. Please wait...');
+    }
+    isOrderProcessingRef.current = true;
+
     const orderItems = cart.map((item) => ({
       productId: item.product.id, productName: item.product.name, productImage: item.product.images[0],
       price: item.product.price, quantity: item.quantity, color: item.selectedColor, size: item.selectedSize,
@@ -623,8 +630,11 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('createOrder error:', e);
       addToast('Failed to create order: ' + (e.message || ''), 'error');
       throw e;
+    } finally {
+      isOrderProcessingRef.current = false;
     }
   };
+
 
   const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
     const statusDescriptions: Record<OrderStatus, string> = {
