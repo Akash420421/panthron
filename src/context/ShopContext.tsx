@@ -91,6 +91,9 @@ interface ShopContextType {
   updateUserAddress: (address: ShippingAddress) => void;
   completeOnboarding: (data: { name: string; phone: string; email: string; address: ShippingAddress; avatar: string; gender: 'male' | 'female' }) => void;
   registeredUsers: User[];
+  isOnboardingModalOpen: boolean;
+  setIsOnboardingModalOpen: (open: boolean) => void;
+
 
   orders: Order[];
   createOrder: (shippingAddress: ShippingAddress, paymentDetails: PaymentDetails) => Promise<Order>;
@@ -204,6 +207,16 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const saved = localStorage.getItem('sz_user');
     return saved ? JSON.parse(saved) : INITIAL_USER;
   });
+
+  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(() => {
+    const savedUser = localStorage.getItem('sz_user');
+    if (savedUser) {
+      const parsed = JSON.parse(savedUser);
+      return !parsed.hasCompletedOnboarding;
+    }
+    return true;
+  });
+
 
   const addToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success') => {
     const id = Date.now().toString() + Math.random().toString(36).substring(2, 5);
@@ -695,7 +708,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       addresses: [data.address]
     };
     setUser(updatedUser);
+    setIsOnboardingModalOpen(false);
     setRegisteredUsers((prev) => {
+
       const exists = prev.some(u => u.id === updatedUser.id || u.email === updatedUser.email);
       if (exists) {
         return prev.map(u => (u.id === updatedUser.id || u.email === updatedUser.email) ? updatedUser : u);
@@ -787,7 +802,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         coupons, appliedCoupon, applyCouponCode, removeCoupon,
         addCoupon, toggleCouponStatus, deleteCoupon, refreshCoupons,
         wishlist, toggleWishlist, isInWishlist,
-        user, setUserRole, toggleUserRole, updateUserProfile, updateUserAddress, completeOnboarding, registeredUsers,
+        user, setUserRole, toggleUserRole, updateUserProfile, updateUserAddress, completeOnboarding, registeredUsers, isOnboardingModalOpen, setIsOnboardingModalOpen,
+
         orders, createOrder, updateOrderStatus, cancelOrder, refreshOrders,
 
         cartSubtotal, cartDiscount, cartShippingFee, cartTax, cartTotal,

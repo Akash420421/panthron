@@ -29,7 +29,9 @@ export const CheckoutPage: React.FC = () => {
     cartTotal, 
     user, 
     createOrder, 
-    navigateTo 
+    navigateTo,
+    setIsOnboardingModalOpen,
+    addToast
   } = useShop();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(2); // Start at Shipping if cart has items
@@ -44,7 +46,7 @@ export const CheckoutPage: React.FC = () => {
     city: user.addresses[0]?.city || 'Springfield',
     state: user.addresses[0]?.state || 'IL',
     zipCode: user.addresses[0]?.zipCode || '62704',
-    country: user.addresses[0]?.country || 'India',
+    country: user.addresses[0]?.country || 'United States',
     isDefault: true
   });
 
@@ -67,6 +69,12 @@ export const CheckoutPage: React.FC = () => {
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
+
+    if (!user.hasCompletedOnboarding) {
+      setIsOnboardingModalOpen(true);
+      addToast('Please save your official customer profile before placing order.', 'info');
+      return;
+    }
 
     setIsSubmitting(true);
     const paymentDetails: PaymentDetails = {

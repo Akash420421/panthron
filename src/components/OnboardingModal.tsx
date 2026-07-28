@@ -1,27 +1,19 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
 import { ShippingAddress } from '../types';
-import { UserCheck, Check } from 'lucide-react';
+import { UserCheck, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-const AVATAR_OPTIONS = {
-  male: [
-    { id: 'm1', name: 'Male Cartoon 1', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&skinColor=tanned,yellow' },
-    { id: 'm2', name: 'Male Cartoon 2', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=Max&backgroundColor=b6e3f4' },
-    { id: 'm3', name: 'Male Cartoon 3', url: 'https://api.dicebear.com/7.x/micah/svg?seed=Oliver&backgroundColor=c0aede' }
-  ],
-  female: [
-    { id: 'f1', name: 'Female Cartoon 1', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sophia&skinColor=tanned,yellow' },
-    { id: 'f2', name: 'Female Cartoon 2', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=Luna&backgroundColor=ffdfbf' },
-    { id: 'f3', name: 'Female Cartoon 3', url: 'https://api.dicebear.com/7.x/micah/svg?seed=Emma&backgroundColor=ffd5dc' }
-  ]
+const AVATARS = {
+  male: 'https://api.dicebear.com/7.x/micah/svg?seed=Oliver&backgroundColor=c0aede',
+  female: 'https://api.dicebear.com/7.x/micah/svg?seed=Emma&backgroundColor=ffd5dc'
 };
 
 export const OnboardingModal: React.FC = () => {
-  const { user, completeOnboarding } = useShop();
+  const { user, completeOnboarding, isOnboardingModalOpen, setIsOnboardingModalOpen } = useShop();
 
-  // If user has already completed onboarding, do not render modal
-  if (user.hasCompletedOnboarding) return null;
+  // Do not render if closed or if user has completed onboarding
+  if (!isOnboardingModalOpen || user.hasCompletedOnboarding) return null;
 
   const defaultAddress = user.addresses?.[0] || {
     fullName: user.name || '',
@@ -36,7 +28,6 @@ export const OnboardingModal: React.FC = () => {
   };
 
   const [gender, setGender] = useState<'male' | 'female'>('male');
-  const [selectedAvatar, setSelectedAvatar] = useState<string>(AVATAR_OPTIONS.male[0].url);
   const [name, setName] = useState(user.name || '');
   const [email, setEmail] = useState(user.email || '');
   const [phone, setPhone] = useState(user.phone || '');
@@ -46,11 +37,6 @@ export const OnboardingModal: React.FC = () => {
   const [zipCode, setZipCode] = useState(defaultAddress.zipCode || '');
   const [country, setCountry] = useState(defaultAddress.country || 'India');
   const [errorMsg, setErrorMsg] = useState('');
-
-  const handleGenderChange = (selectedGender: 'male' | 'female') => {
-    setGender(selectedGender);
-    setSelectedAvatar(AVATAR_OPTIONS[selectedGender][0].url);
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,7 +70,7 @@ export const OnboardingModal: React.FC = () => {
       phone: phone.trim(),
       email: email.trim(),
       address: shippingAddress,
-      avatar: selectedAvatar,
+      avatar: AVATARS[gender],
       gender
     });
   };
@@ -93,81 +79,79 @@ export const OnboardingModal: React.FC = () => {
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 my-8 space-y-5 text-zinc-900"
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+          className="bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl border border-zinc-200 my-6 text-zinc-900 relative"
         >
-          <div className="text-center space-y-1.5 border-b border-zinc-100 pb-4">
-            <div className="w-12 h-12 bg-blue-50 text-[#003882] rounded-2xl flex items-center justify-center mx-auto mb-2 border border-blue-100">
-              <UserCheck className="w-6 h-6" />
+          {/* Top Close / Skip Button */}
+          <button
+            type="button"
+            onClick={() => setIsOnboardingModalOpen(false)}
+            className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-full transition-colors"
+            title="Skip for now"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          <div className="text-center space-y-1 pb-3 border-b border-zinc-100">
+            <div className="w-10 h-10 bg-blue-50 text-[#003882] rounded-2xl flex items-center justify-center mx-auto border border-blue-100">
+              <UserCheck className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-extrabold text-zinc-900">Welcome to PANTHRON</h2>
-            <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-              Please setup your official customer profile & delivery address to continue shopping.
+            <h2 className="text-lg font-black text-zinc-900">Welcome to PANTHRON</h2>
+            <p className="text-xs text-zinc-500 max-w-xs mx-auto">
+              Setup your customer profile & delivery address to shop smoothly.
             </p>
           </div>
 
           {errorMsg && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl text-xs font-semibold">
+            <div className="mt-3 bg-rose-50 border border-rose-200 text-rose-700 p-2.5 rounded-xl text-xs font-semibold">
               ⚠️ {errorMsg}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-            {/* Gender & Avatar Selection */}
-            <div>
-              <label className="block text-zinc-700 font-bold mb-2">Select Avatar & Gender</label>
-              <div className="flex gap-3 mb-3">
-                <button
-                  type="button"
-                  onClick={() => handleGenderChange('male')}
-                  className={`flex-1 py-2 px-3 rounded-xl font-bold border transition-all text-center ${
-                    gender === 'male'
-                      ? 'bg-[#003882] text-white border-[#003882]'
-                      : 'bg-zinc-50 text-zinc-700 border-zinc-300 hover:bg-zinc-100'
-                  }`}
-                >
-                  Male Cartoon 👨‍💼
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleGenderChange('female')}
-                  className={`flex-1 py-2 px-3 rounded-xl font-bold border transition-all text-center ${
-                    gender === 'female'
-                      ? 'bg-[#003882] text-white border-[#003882]'
-                      : 'bg-zinc-50 text-zinc-700 border-zinc-300 hover:bg-zinc-100'
-                  }`}
-                >
-                  Female Cartoon 👩‍💼
-                </button>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                {AVATAR_OPTIONS[gender].map((avatar) => (
+          <form onSubmit={handleSubmit} className="space-y-3 text-xs mt-3">
+            {/* Gender Selection & Avatar Preview */}
+            <div className="bg-zinc-50 p-3 rounded-2xl border border-zinc-200 flex items-center justify-between gap-4">
+              <div className="space-y-1.5 flex-1">
+                <label className="block text-zinc-800 font-bold">Select Gender</label>
+                <div className="flex gap-2">
                   <button
-                    key={avatar.id}
                     type="button"
-                    onClick={() => setSelectedAvatar(avatar.url)}
-                    className={`p-2 rounded-2xl border flex flex-col items-center gap-1.5 transition-all ${
-                      selectedAvatar === avatar.url
-                        ? 'border-[#003882] ring-2 ring-[#003882]/20 bg-blue-50/50'
-                        : 'border-zinc-200 bg-zinc-50 hover:bg-zinc-100'
+                    onClick={() => setGender('male')}
+                    className={`flex-1 py-1.5 px-3 rounded-xl font-bold border transition-all text-center ${
+                      gender === 'male'
+                        ? 'bg-[#003882] text-white border-[#003882]'
+                        : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100'
                     }`}
                   >
-                    <img
-                      src={avatar.url}
-                      alt={avatar.name}
-                      className="w-12 h-12 rounded-xl object-cover bg-white"
-                    />
-                    <span className="text-[10px] font-bold text-zinc-700">{avatar.name}</span>
+                    Male
                   </button>
-                ))}
+                  <button
+                    type="button"
+                    onClick={() => setGender('female')}
+                    className={`flex-1 py-1.5 px-3 rounded-xl font-bold border transition-all text-center ${
+                      gender === 'female'
+                        ? 'bg-[#003882] text-white border-[#003882]'
+                        : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100'
+                    }`}
+                  >
+                    Female
+                  </button>
+                </div>
+              </div>
+
+              <div className="shrink-0 text-center">
+                <img
+                  src={AVATARS[gender]}
+                  alt={gender}
+                  className="w-14 h-14 rounded-2xl object-cover border-2 border-[#003882]/20 bg-white shadow-xs"
+                />
               </div>
             </div>
 
             {/* Personal Info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="block text-zinc-700 font-bold mb-1">Full Name *</label>
                 <input
@@ -176,7 +160,7 @@ export const OnboardingModal: React.FC = () => {
                   placeholder="e.g. Akash Singh"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-zinc-50 text-zinc-900 p-2.5 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
+                  className="w-full bg-zinc-50 text-zinc-900 p-2 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
                 />
               </div>
 
@@ -188,7 +172,7 @@ export const OnboardingModal: React.FC = () => {
                   placeholder="+91 98765 43210"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-zinc-50 text-zinc-900 p-2.5 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
+                  className="w-full bg-zinc-50 text-zinc-900 p-2 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
                 />
               </div>
             </div>
@@ -201,24 +185,22 @@ export const OnboardingModal: React.FC = () => {
                 placeholder="yourname@domain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-zinc-50 text-zinc-900 p-2.5 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
+                className="w-full bg-zinc-50 text-zinc-900 p-2 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
               />
             </div>
 
             {/* Delivery Address */}
-            <div className="space-y-2 pt-2 border-t border-zinc-100">
+            <div className="space-y-2 pt-1 border-t border-zinc-100">
               <label className="block text-zinc-900 font-bold text-xs">Primary Delivery Address</label>
 
-              <div>
-                <input
-                  type="text"
-                  required
-                  placeholder="Street / House No / Area *"
-                  value={street}
-                  onChange={(e) => setStreet(e.target.value)}
-                  className="w-full bg-zinc-50 text-zinc-900 p-2.5 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
-                />
-              </div>
+              <input
+                type="text"
+                required
+                placeholder="Street / House No / Area *"
+                value={street}
+                onChange={(e) => setStreet(e.target.value)}
+                className="w-full bg-zinc-50 text-zinc-900 p-2 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
+              />
 
               <div className="grid grid-cols-2 gap-2">
                 <input
@@ -227,14 +209,14 @@ export const OnboardingModal: React.FC = () => {
                   placeholder="City *"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="w-full bg-zinc-50 text-zinc-900 p-2.5 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
+                  className="w-full bg-zinc-50 text-zinc-900 p-2 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
                 />
                 <input
                   type="text"
                   placeholder="State"
                   value={state}
                   onChange={(e) => setState(e.target.value)}
-                  className="w-full bg-zinc-50 text-zinc-900 p-2.5 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
+                  className="w-full bg-zinc-50 text-zinc-900 p-2 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
                 />
               </div>
 
@@ -245,25 +227,35 @@ export const OnboardingModal: React.FC = () => {
                   placeholder="PIN / Zip Code *"
                   value={zipCode}
                   onChange={(e) => setZipCode(e.target.value)}
-                  className="w-full bg-zinc-50 text-zinc-900 p-2.5 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
+                  className="w-full bg-zinc-50 text-zinc-900 p-2 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
                 />
                 <input
                   type="text"
                   placeholder="Country"
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
-                  className="w-full bg-zinc-50 text-zinc-900 p-2.5 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
+                  className="w-full bg-zinc-50 text-zinc-900 p-2 rounded-xl border border-zinc-300 focus:border-[#003882] focus:outline-none"
                 />
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="w-full bg-[#003882] hover:bg-[#002866] text-white font-extrabold py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-all mt-3"
-            >
-              <Check className="w-4 h-4" />
-              <span>Save Profile & Start Shopping</span>
-            </button>
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsOnboardingModalOpen(false)}
+                className="flex-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold py-2.5 px-3 rounded-xl text-xs transition-all"
+              >
+                Skip for Now
+              </button>
+
+              <button
+                type="submit"
+                className="flex-1 bg-[#003882] hover:bg-[#002866] text-white font-extrabold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition-all"
+              >
+                <Check className="w-4 h-4" />
+                <span>Save Profile</span>
+              </button>
+            </div>
           </form>
         </motion.div>
       </div>
